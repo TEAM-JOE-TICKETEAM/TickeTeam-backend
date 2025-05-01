@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE, staticName = "of")
 public class Team {
 
     @Id
@@ -24,7 +24,4 @@ public class Team {
     @Column(name = "team_name")
     private String teamName;
 
-    public static Team of(String teamName) {
-        return new Team(null, teamName);
-    }
 }
