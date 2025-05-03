@@ -1,5 +1,6 @@
-package com.tickeTeam.domain.member;
+package com.tickeTeam.domain.member.entity;
 
+import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,4 +45,12 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "favorite_team", nullable = false)
     private Team favoriteTeam; // 응원팀
 
+    public static Member of(MemberSignUpRequest dto, String hashedPassword ,Team favoriteTeam){
+        return Member.builder()
+                .name(dto.getName())
+                .email(dto.getEmail())
+                .password(hashedPassword)
+                .favoriteTeam(favoriteTeam)
+                .build();
+    }
 }
