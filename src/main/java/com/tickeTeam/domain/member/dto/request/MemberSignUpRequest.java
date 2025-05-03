@@ -1,5 +1,6 @@
 package com.tickeTeam.domain.member.dto.request;
 
+import com.tickeTeam.domain.member.entity.MemberRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,5 +19,5 @@ public class MemberSignUpRequest {
 
     private String favoriteTeam;
 
-
+    private MemberRole role; // USER, ADMIN
 }

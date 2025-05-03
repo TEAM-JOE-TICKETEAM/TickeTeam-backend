@@ -57,6 +57,7 @@ public class Member extends BaseEntity {
                 .email(dto.getEmail())
                 .password(hashedPassword)
                 .favoriteTeam(favoriteTeam)
+                .role(dto.getRole())
                 .build();
     }
 }
