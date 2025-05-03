@@ -8,12 +8,10 @@ import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.domain.member.dto.request.MemberSignInRequest;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.global.exception.ErrorCode;
-import com.tickeTeam.global.exception.customException.BusinessException;
 import com.tickeTeam.global.exception.customException.NotFoundException;
 import com.tickeTeam.global.result.ResultCode;
 import com.tickeTeam.global.result.ResultResponse;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,7 +23,7 @@ public class MemberServiceImpl implements MemberService{
 
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     // 회원 가입
     @Transactional
@@ -42,7 +40,7 @@ public class MemberServiceImpl implements MemberService{
         Team favoriteTeam = teamRepository.findByTeamName(memberSignUpRequest.getFavoriteTeam()).orElseThrow();
 
         // 비밀번호 인코딩
-        String hashedPassword = passwordEncoder.encode(memberSignUpRequest.getPassword());
+        String hashedPassword = bCryptPasswordEncoder.encode(memberSignUpRequest.getPassword());
 
         // 실제 객체 저장
         Member newMember =memberRepository.save(Member.of(memberSignUpRequest, hashedPassword, favoriteTeam));
@@ -61,7 +59,7 @@ public class MemberServiceImpl implements MemberService{
         );
 
         // 패스워드 해싱 후 검사
-        if (!passwordEncoder.matches(memberSignInRequest.getPassword(), member.getPassword())) {
+        if (!bCryptPasswordEncoder.matches(memberSignInRequest.getPassword(), member.getPassword())) {
             return ResultResponse.of(ResultCode.LOGIN_FAIL);
         }
 
