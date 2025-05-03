@@ -4,6 +4,8 @@ import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.global.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,6 +42,10 @@ public class Member extends BaseEntity {
 
     @Column(name = "password", nullable = false)
     private String password; // 비밀번호
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private MemberRole role;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "favorite_team", nullable = false)
