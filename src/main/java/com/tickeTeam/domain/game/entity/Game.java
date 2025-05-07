@@ -1,4 +1,4 @@
-package com.tickeTeam.domain.match.entity;
+package com.tickeTeam.domain.game.entity;
 
 import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.stadium.entity.Stadium;
@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Match{
+public class Game {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
