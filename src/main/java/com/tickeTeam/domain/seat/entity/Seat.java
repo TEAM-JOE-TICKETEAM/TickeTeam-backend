@@ -1,6 +1,7 @@
 package com.tickeTeam.domain.seat.entity;
 
 import com.tickeTeam.domain.game.entity.Game;
+import com.tickeTeam.domain.stadium.entity.Stadium;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -32,6 +32,10 @@ public class Seat {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "game", nullable = false)
     private Game game;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seat_stadium", nullable = false)
+    private Stadium seatStadium;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_template", nullable = false)

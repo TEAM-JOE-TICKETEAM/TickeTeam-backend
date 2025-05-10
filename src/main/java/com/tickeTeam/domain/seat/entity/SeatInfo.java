@@ -8,10 +8,10 @@ import lombok.Getter;
 @Embeddable
 public class SeatInfo {
 
-    @Column(name = "seat_type")
+    @Column(name = "seat_type", nullable = false)
     private String seatType;
 
-    @Column(name = "seat_section")
+    @Column(name = "seat_section", nullable = false)
     private String seatSection;
 
     @Column(name = "seat_block")
