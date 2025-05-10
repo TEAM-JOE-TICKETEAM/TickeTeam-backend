@@ -1,4 +1,4 @@
-package com.tickeTeam.common.init;
+package com.tickeTeam.initializer;
 
 import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.member.repository.TeamRepository;
