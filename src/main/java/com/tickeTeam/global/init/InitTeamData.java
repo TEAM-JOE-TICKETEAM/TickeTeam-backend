@@ -2,14 +2,15 @@ package com.tickeTeam.global.init;
 
 import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.member.repository.TeamRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Order(1)
 @Component
 @RequiredArgsConstructor
 public class InitTeamData implements ApplicationRunner {
@@ -28,7 +29,8 @@ public class InitTeamData implements ApplicationRunner {
                     Team.of("롯데 자이언츠"),
                     Team.of("SSG 랜더스"),
                     Team.of("키움 히어로즈"),
-                    Team.of("NC 다이노스")
+                    Team.of("NC 다이노스"),
+                    Team.of("KT 위즈")
             );
 
             teamRepository.saveAll(teams);
