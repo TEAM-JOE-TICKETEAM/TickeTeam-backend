@@ -15,6 +15,7 @@ public enum ErrorCode {
     ACCESS_INVALID_VALUE(400, "G003", "잘못된 접근"),
 
     // Game
+    GAME_DATA_INSERT_ERROR(500,"GA001", "game 데이터 삽입 중 오류 발생"),
 
     // Team
     TEAM_NOT_FOUND(404,"T001","팀 찾을 수 없음"),

@@ -8,6 +8,7 @@ import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import com.tickeTeam.domain.stadium.repository.StadiumRepository;
 import com.tickeTeam.global.exception.ErrorCode;
+import com.tickeTeam.global.exception.customException.BusinessException;
 import com.tickeTeam.global.exception.customException.NotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -81,10 +82,9 @@ public class InitGameData implements ApplicationRunner {
                     // DB에 저장
                     gameRepository.save(game);
                 }
-                else log.error("game 데이터 삽입 중 오류 발생 homeTeamID:{} awayTeamID:{} stadiumTeamID:{}", homeTeamId, awayTeamId, stadiumId);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new BusinessException(ErrorCode.GAME_DATA_INSERT_ERROR);
         }
 
 
