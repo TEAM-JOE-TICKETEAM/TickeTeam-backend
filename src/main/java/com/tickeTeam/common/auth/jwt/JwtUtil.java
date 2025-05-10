@@ -1,7 +1,7 @@
-package com.tickeTeam.global.auth.jwt;
+package com.tickeTeam.common.auth.jwt;
 
 import com.tickeTeam.domain.member.entity.MemberRole;
-import com.tickeTeam.global.auth.service.CustomUserDetailService;
+import com.tickeTeam.common.auth.service.CustomUserDetailService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Jwts.SIG;
 import java.nio.charset.StandardCharsets;

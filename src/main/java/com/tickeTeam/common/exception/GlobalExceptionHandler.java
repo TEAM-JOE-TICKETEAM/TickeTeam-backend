@@ -1,6 +1,6 @@
-package com.tickeTeam.global.exception;
+package com.tickeTeam.common.exception;
 
-import com.tickeTeam.global.exception.customException.BusinessException;
+import com.tickeTeam.common.exception.customException.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

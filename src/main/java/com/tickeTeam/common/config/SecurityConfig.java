@@ -1,7 +1,7 @@
-package com.tickeTeam.global.config;
+package com.tickeTeam.common.config;
 
-import com.tickeTeam.global.auth.jwt.JwtFilter;
-import com.tickeTeam.global.auth.jwt.JwtUtil;
+import com.tickeTeam.common.auth.jwt.JwtFilter;
+import com.tickeTeam.common.auth.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

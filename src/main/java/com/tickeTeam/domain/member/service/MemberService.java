@@ -2,7 +2,7 @@ package com.tickeTeam.domain.member.service;
 
 import com.tickeTeam.domain.member.dto.request.MemberSignInRequest;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
-import com.tickeTeam.global.result.ResultResponse;
+import com.tickeTeam.common.result.ResultResponse;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface MemberService {

@@ -1,4 +1,4 @@
-package com.tickeTeam.global.init;
+package com.tickeTeam.common.init;
 
 import com.tickeTeam.domain.seat.entity.SeatInfo;
 import com.tickeTeam.domain.seat.entity.SeatTemplate;

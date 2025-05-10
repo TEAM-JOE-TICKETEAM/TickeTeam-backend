@@ -1,8 +1,8 @@
-package com.tickeTeam.global.auth.service;
+package com.tickeTeam.common.auth.service;
 
 import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.repository.MemberRepository;
-import com.tickeTeam.global.auth.dto.UserDetailsDto;
+import com.tickeTeam.common.auth.dto.UserDetailsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -1,4 +1,4 @@
-package com.tickeTeam.global.config;
+package com.tickeTeam.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

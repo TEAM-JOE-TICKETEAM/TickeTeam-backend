@@ -1,4 +1,4 @@
-package com.tickeTeam.global.exception;
+package com.tickeTeam.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

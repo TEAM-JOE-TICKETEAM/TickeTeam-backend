@@ -1,9 +1,8 @@
-package com.tickeTeam.global.auth.dto;
+package com.tickeTeam.common.auth.dto;
 
 import com.tickeTeam.domain.member.entity.Member;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -1,4 +1,4 @@
-package com.tickeTeam.global.init;
+package com.tickeTeam.common.init;
 
 import com.tickeTeam.domain.game.entity.Game;
 import com.tickeTeam.domain.game.repository.GameRepository;
@@ -9,8 +9,8 @@ import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.seat.repository.SeatTemplateRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import com.tickeTeam.domain.stadium.repository.StadiumRepository;
-import com.tickeTeam.global.exception.ErrorCode;
-import com.tickeTeam.global.exception.customException.NotFoundException;
+import com.tickeTeam.common.exception.ErrorCode;
+import com.tickeTeam.common.exception.customException.NotFoundException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

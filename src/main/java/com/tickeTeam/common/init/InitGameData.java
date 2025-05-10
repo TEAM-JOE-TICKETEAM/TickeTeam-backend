@@ -1,4 +1,4 @@
-package com.tickeTeam.global.init;
+package com.tickeTeam.common.init;
 
 import com.opencsv.CSVReader;
 import com.tickeTeam.domain.game.entity.Game;
@@ -7,9 +7,9 @@ import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import com.tickeTeam.domain.stadium.repository.StadiumRepository;
-import com.tickeTeam.global.exception.ErrorCode;
-import com.tickeTeam.global.exception.customException.BusinessException;
-import com.tickeTeam.global.exception.customException.NotFoundException;
+import com.tickeTeam.common.exception.ErrorCode;
+import com.tickeTeam.common.exception.customException.BusinessException;
+import com.tickeTeam.common.exception.customException.NotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;

@@ -1,4 +1,4 @@
-package com.tickeTeam.global.exception;
+package com.tickeTeam.common.exception;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,7 +3,7 @@ package com.tickeTeam.domain.member.controller;
 import com.tickeTeam.domain.member.dto.request.MemberSignInRequest;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.domain.member.service.MemberService;
-import com.tickeTeam.global.result.ResultResponse;
+import com.tickeTeam.common.result.ResultResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

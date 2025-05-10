@@ -1,7 +1,5 @@
-package com.tickeTeam.global.init;
+package com.tickeTeam.common.init;
 
-import com.tickeTeam.domain.member.entity.Team;
-import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import com.tickeTeam.domain.stadium.repository.StadiumRepository;
 import java.util.List;

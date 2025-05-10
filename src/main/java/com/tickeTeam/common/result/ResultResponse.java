@@ -1,4 +1,4 @@
-package com.tickeTeam.global.result;
+package com.tickeTeam.common.result;
 
 import lombok.Getter;
 

@@ -1,7 +1,7 @@
 package com.tickeTeam.domain.member.entity;
 
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
-import com.tickeTeam.global.entity.BaseEntity;
+import com.tickeTeam.common.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
