@@ -1,4 +1,4 @@
-package com.tickeTeam.common.config;
+package com.tickeTeam.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

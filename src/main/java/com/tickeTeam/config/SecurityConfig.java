@@ -1,4 +1,4 @@
-package com.tickeTeam.common.config;
+package com.tickeTeam.config;
 
 import com.tickeTeam.common.auth.jwt.JwtFilter;
 import com.tickeTeam.common.auth.jwt.JwtUtil;
