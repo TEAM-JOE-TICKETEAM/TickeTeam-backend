@@ -8,7 +8,7 @@ import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.domain.member.dto.request.MemberSignInRequest;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
-import com.tickeTeam.common.auth.jwt.JwtUtil;
+import com.tickeTeam.domain.auth.jwt.JwtUtil;
 import com.tickeTeam.common.exception.ErrorCode;
 import com.tickeTeam.common.exception.customException.NotFoundException;
 import com.tickeTeam.common.result.ResultCode;
