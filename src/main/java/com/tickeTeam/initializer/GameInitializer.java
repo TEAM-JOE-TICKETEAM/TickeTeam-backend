@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class InitGameData implements ApplicationRunner {
+public class GameInitializer implements ApplicationRunner {
 
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Order(1)
 @Component
 @RequiredArgsConstructor
-public class InitStadiumData implements ApplicationRunner {
+public class StadiumInitializer implements ApplicationRunner {
 
     private final StadiumRepository stadiumRepository;
 
@@ -22,7 +22,7 @@ public class InitStadiumData implements ApplicationRunner {
             List<Stadium> stadiums = List.of(
                     Stadium.of("잠실 야구장"),
                     Stadium.of("대구 삼성 라이온즈 파크"),
-                    Stadium.of("대전 한화 생명 볼 파크"),
+                    Stadium. of("대전 한화 생명 볼 파크"),
                     Stadium.of("광주 기아 챔피언스 필드"),
                     Stadium.of("사직 야구장"),
                     Stadium.of("인천 SSG 랜더스 필드"),

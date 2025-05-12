@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 @Order(3)
 @Component
 @RequiredArgsConstructor
-public class InitThisWeekSeatData implements ApplicationRunner {
+public class SeatInitializer implements ApplicationRunner {
 
     public static final int DAYS_FROM_TODAY = 1;
     public static final int DAYS_TO_END = 7;

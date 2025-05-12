@@ -13,7 +13,7 @@ import java.util.List;
 @Order(1)
 @Component
 @RequiredArgsConstructor
-public class InitTeamData implements ApplicationRunner {
+public class TeamInitializer implements ApplicationRunner {
 
     private final TeamRepository teamRepository;
 

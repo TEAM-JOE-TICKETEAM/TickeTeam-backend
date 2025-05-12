@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @Order(1)
 @Component
 @RequiredArgsConstructor
-public class InitSeatTemplateData implements ApplicationRunner {
+public class SeatTemplateInitializer implements ApplicationRunner {
 
     // 좌석 관련 상수
     private static final String ASSIGNED_SECTION = "1루 레드석";
