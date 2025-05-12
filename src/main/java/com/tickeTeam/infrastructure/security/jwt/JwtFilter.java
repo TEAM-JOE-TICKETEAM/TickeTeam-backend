@@ -1,4 +1,4 @@
-package com.tickeTeam.domain.auth.jwt;
+package com.tickeTeam.infrastructure.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tickeTeam.domain.member.entity.TokenTypes;

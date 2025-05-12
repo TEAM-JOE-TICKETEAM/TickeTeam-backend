@@ -1,12 +1,11 @@
-package com.tickeTeam.domain.member.dto.response;
+package com.tickeTeam.infrastructure.security.authentication.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
 @Builder
-public class LoginMemberResponse {
+public class LoginResponse {
 
     private final String email;
 

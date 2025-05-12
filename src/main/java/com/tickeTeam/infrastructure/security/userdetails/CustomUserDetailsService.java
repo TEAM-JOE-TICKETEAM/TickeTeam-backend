@@ -1,8 +1,7 @@
-package com.tickeTeam.domain.auth.service;
+package com.tickeTeam.infrastructure.security.userdetails;
 
 import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.repository.MemberRepository;
-import com.tickeTeam.domain.auth.dto.UserDetailsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
-public class CustomUserDetailService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
 

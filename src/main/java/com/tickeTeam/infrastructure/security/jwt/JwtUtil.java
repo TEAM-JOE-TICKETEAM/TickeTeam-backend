@@ -1,7 +1,7 @@
-package com.tickeTeam.domain.auth.jwt;
+package com.tickeTeam.infrastructure.security.jwt;
 
 import com.tickeTeam.domain.member.entity.MemberRole;
-import com.tickeTeam.domain.auth.service.CustomUserDetailService;
+import com.tickeTeam.infrastructure.security.userdetails.CustomUserDetailsService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Jwts.SIG;
 import java.nio.charset.StandardCharsets;
@@ -26,9 +26,9 @@ public class JwtUtil {
     private Long refreshTokenExpirationPeriod;
 
     private final SecretKey secretKey;
-    private final CustomUserDetailService userDetailService;
+    private final CustomUserDetailsService userDetailService;
 
-    public JwtUtil(@Value("${jwt.secretKey}") String secret, CustomUserDetailService userDetailService) {
+    public JwtUtil(@Value("${jwt.secretKey}") String secret, CustomUserDetailsService userDetailService) {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),
                 SIG.HS256.key().build().getAlgorithm());
         this.userDetailService = userDetailService;

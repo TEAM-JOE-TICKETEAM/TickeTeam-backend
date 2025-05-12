@@ -1,4 +1,4 @@
-package com.tickeTeam.domain.auth.dto;
+package com.tickeTeam.infrastructure.security.userdetails;
 
 import com.tickeTeam.domain.member.entity.Member;
 import java.util.ArrayList;

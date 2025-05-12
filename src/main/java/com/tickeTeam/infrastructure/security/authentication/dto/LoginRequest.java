@@ -1,11 +1,11 @@
-package com.tickeTeam.domain.member.dto.request;
+package com.tickeTeam.infrastructure.security.authentication.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class MemberSignInRequest {
+public class LoginRequest {
 
     private final String email;
     private final String password;
