@@ -14,7 +14,8 @@ public enum ResultCode {
     CHECK_EMAIL("M002", "이메일 중복입니다."),
     LOGIN_FAIL("M003", "로그인에 실패했습니다. 비밀번호를 확인해주세요."),
     LOGIN_SUCCESS("M004", "로그인 성공하였습니다."),
-    MY_PAGE("M005", "마이페이지 조회에 성공했습니다.")
+    MY_PAGE("M005", "마이페이지 조회에 성공했습니다."),
+    MEMBER_UPDATE_SUCCESS("M006", "회원 정보 수정에 성공했습니다.")
     // Game
 
     // Seat

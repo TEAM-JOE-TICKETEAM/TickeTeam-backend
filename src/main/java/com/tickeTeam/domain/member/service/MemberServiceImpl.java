@@ -3,7 +3,6 @@ package com.tickeTeam.domain.member.service;
 import com.tickeTeam.common.exception.ErrorCode;
 import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
-import com.tickeTeam.domain.member.dto.request.UpdateFavoriteTeamRequest;
 import com.tickeTeam.domain.member.dto.request.MemberUpdateRequest;
 import com.tickeTeam.domain.member.dto.response.MyPageResponse;
 import com.tickeTeam.domain.member.entity.Member;
@@ -34,8 +33,8 @@ public class MemberServiceImpl implements MemberService {
     private final JwtUtil jwtUtil;
 
     // 회원 가입
-    @Transactional
     @Override
+    @Transactional
     public ResultResponse signUp(MemberSignUpRequest memberSignUpRequest) {
 
         // 이메일 중복 검사
@@ -45,7 +44,9 @@ public class MemberServiceImpl implements MemberService {
         }
 
         // 응원 팀 설정
-        Team favoriteTeam = teamRepository.findByTeamName(memberSignUpRequest.getFavoriteTeam()).orElseThrow();
+        Team favoriteTeam = teamRepository.findByTeamName(memberSignUpRequest.getFavoriteTeam()).orElseThrow(
+                () -> new NotFoundException(ErrorCode.TEAM_NOT_FOUND)
+        );
 
         // 비밀번호 인코딩
         String hashedPassword = bCryptPasswordEncoder.encode(memberSignUpRequest.getPassword());
@@ -59,25 +60,32 @@ public class MemberServiceImpl implements MemberService {
     // 회원 정보 조회
     @Override
     public ResultResponse myPage(HttpServletRequest request) {
-        // jwt 토큰으로부터 추출한 이메일로 사용자 조회
-        String memberEmail = jwtUtil.getEmail(extractAccessToken(request));
-        Member findMember = memberRepository.findByEmail(memberEmail).orElseThrow(
-                () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
-        );
+        Member findMember = getMemberByRequest(request);
 
         return ResultResponse.of(ResultCode.MY_PAGE, MyPageResponse.from(findMember));
     }
 
     // 회원 정보 수정
     @Override
+    @Transactional
     public ResultResponse updateMember(MemberUpdateRequest memberUpdateRequest, HttpServletRequest request) {
-        return null;
+        Member findMember = getMemberByRequest(request);
+        Team findTeam = teamRepository.findByTeamName(memberUpdateRequest.getFavoriteTeam()).orElseThrow(
+                () -> new NotFoundException(ErrorCode.TEAM_NOT_FOUND)
+        );
+
+        findMember.update(memberUpdateRequest, findTeam);
+
+        return ResultResponse.of(ResultCode.MEMBER_UPDATE_SUCCESS);
     }
 
-    // 회원 정보 수정
-    @Override
-    public ResultResponse changeFavoriteTeam(UpdateFavoriteTeamRequest updateFavoriteTeamRequest, HttpServletRequest request) {
-        return null;
+    private Member getMemberByRequest(HttpServletRequest request) {
+        // jwt 토큰으로부터 추출한 이메일로 사용자 조회
+        String memberEmail = jwtUtil.getEmail(extractAccessToken(request));
+        Member findMember = memberRepository.findByEmail(memberEmail).orElseThrow(
+                () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
+        );
+        return findMember;
     }
 
     private String extractAccessToken(HttpServletRequest request) {
