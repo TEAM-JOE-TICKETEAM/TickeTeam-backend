@@ -58,8 +58,8 @@ class MemberServiceImplTest {
     private MemberServiceImpl memberService;
 
     // 테스트에 사용될 상수 정의
-    private static final String ACCESS_HEADER = "Authorization"; // 서비스 코드의 실제 상수값 사용
-    private static final String BEARER_PREFIX = "Bearer ";        // 서비스 코드의 실제 상수값 사용
+    private static final String ACCESS_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
 
     private Member testMember;
     private MemberSignUpRequest testSignUpRequest;
@@ -236,10 +236,10 @@ class MemberServiceImplTest {
         assertThat(resultResponse).isNotNull();
         assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.MEMBER_UPDATE_SUCCESS.getMessage());
 
-        verify(request).getHeader(ACCESS_HEADER); // getMemberByRequest 내부 호출 검증
-        verify(jwtUtil).getEmail(testToken);     // getMemberByRequest 내부 호출 검증
-        verify(memberRepository).findByEmail(testEmail); // getMemberByRequest 내부 호출 검증
-        verify(teamRepository).findByTeamName(testUpdateRequest.getFavoriteTeam()); // 직접 호출 검증
+        verify(request).getHeader(ACCESS_HEADER);
+        verify(jwtUtil).getEmail(testToken);
+        verify(memberRepository).findByEmail(testEmail);
+        verify(teamRepository).findByTeamName(testUpdateRequest.getFavoriteTeam());
         verify(mockExistingMember).update(testUpdateRequest, updateTeam);
     }
 
@@ -249,18 +249,21 @@ class MemberServiceImplTest {
         when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
         when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockExistingMember));
+        when(teamRepository.findByTeamName(testUpdateRequest.getFavoriteTeam())).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
             memberService.updateMember(testUpdateRequest, request);
         });
+        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.TEAM_NOT_FOUND);
 
         verify(request).getHeader(ACCESS_HEADER);
         verify(jwtUtil).getEmail(testToken);
         verify(memberRepository).findByEmail(testEmail);
+        verify(teamRepository).findByTeamName(testUpdateRequest.getFavoriteTeam());
     }
 
     @Test
-    @DisplayName("마이 페이지 조회 실패 - 추출한 이메일로 사용자 찾을 수 없음")
+    @DisplayName("사용자 정보 수정 실패 - 추출한 이메일로 사용자 찾을 수 없음")
     void 사용자_정보_수정_실패_사용자_못찾음(){
         // 준비
         when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
@@ -276,5 +279,6 @@ class MemberServiceImplTest {
         verify(request).getHeader(ACCESS_HEADER);
         verify(jwtUtil).getEmail(testToken);
         verify(memberRepository).findByEmail(testEmail);
+        verifyNoInteractions(teamRepository);
     }
 }
