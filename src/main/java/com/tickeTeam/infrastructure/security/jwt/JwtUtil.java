@@ -39,10 +39,11 @@ public class JwtUtil {
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
         }
+
         return Jwts.parser().verifyWith(secretKey).build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .get("memberEmail", String.class);
+                .get("email", String.class);
     }
 
     // identity 추출

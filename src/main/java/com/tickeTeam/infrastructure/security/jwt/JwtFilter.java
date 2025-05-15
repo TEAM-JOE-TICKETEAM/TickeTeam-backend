@@ -32,7 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         // Header에서 Access-Token 추출
-        String tokenHeader = request.getHeader(TokenTypes.ACCESS.getType());
+        String tokenHeader = request.getHeader("Authorization");
 
         // Bearer 시작 여부 및 null 값 검증
         if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
@@ -58,7 +58,6 @@ public class JwtFilter extends OncePerRequestFilter {
     // email을 추출 및 인증 정보를 설정
     private void setAuthentication(String token) {
         String email = jwtUtil.getEmail(token);
-
         Authentication authentication = jwtUtil.getAuthentication(email);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
@@ -91,7 +90,7 @@ public class JwtFilter extends OncePerRequestFilter {
     // Jwt 검증 제외 경로
     private boolean isExcludedPath(AntPathMatcher pathMatcher, String requestURI) {
 
-        return pathMatcher.match("/api/v1/member/login/**", requestURI)
+        return pathMatcher.match("/api/v1/auth/login/**", requestURI)
                 || pathMatcher.match("/api/v1/member/signup", requestURI)
                 || pathMatcher.match("/api/v1/member/signup/**", requestURI)
                 || pathMatcher.match("/v3/api-docs/**", requestURI)

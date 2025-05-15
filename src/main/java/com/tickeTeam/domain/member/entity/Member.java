@@ -2,6 +2,7 @@ package com.tickeTeam.domain.member.entity;
 
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.common.entity.BaseEntity;
+import com.tickeTeam.domain.member.dto.request.MemberUpdateRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -51,13 +52,18 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "favorite_team", nullable = false)
     private Team favoriteTeam; // 응원팀
 
-    public static Member of(MemberSignUpRequest dto, String hashedPassword ,Team favoriteTeam){
+    public static Member of(MemberSignUpRequest request, String hashedPassword ,Team favoriteTeam){
         return Member.builder()
-                .name(dto.getName())
-                .email(dto.getEmail())
+                .name(request.getName())
+                .email(request.getEmail())
                 .password(hashedPassword)
                 .favoriteTeam(favoriteTeam)
-                .role(dto.getRole())
+                .role(request.getRole())
                 .build();
+    }
+
+    public void update(MemberUpdateRequest request, Team team){
+        this.name = request.getName();
+        this.favoriteTeam = team;
     }
 }

@@ -17,7 +17,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     // 사용자 인증을 위한 사용자 정보 로드 클래스
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-       Member foundMember = memberRepository.findByEmail(email).orElseThrow(
+        Member foundMember = memberRepository.findByEmail(email).orElseThrow(
                () -> new UsernameNotFoundException("NOT EXIST MEMBER")
        );
 
