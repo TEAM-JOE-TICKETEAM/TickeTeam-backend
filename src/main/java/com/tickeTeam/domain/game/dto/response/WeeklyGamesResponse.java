@@ -13,9 +13,13 @@ import lombok.Getter;
 public class WeeklyGamesResponse {
 
     private List<GameInfoResponse> games; // 실제 경기 정보 리스트
+
     private LocalDate startDate;          // 주간 조회 시작일
+
     private LocalDate endDate;            // 주간 조회 종료일
+
     private String team;                  // 조회 대상 응원팀
+
     private int totalGames;               // 조회된 총 경기 수
 
 
