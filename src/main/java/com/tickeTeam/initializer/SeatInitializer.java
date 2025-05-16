@@ -48,10 +48,9 @@ public class SeatInitializer implements ApplicationRunner {
         );
 
         LocalDate today = LocalDate.now();
-        LocalDate start = today.plusDays(DAYS_FROM_TODAY); // 내일
         LocalDate end = today.plusDays(DAYS_TO_END);   // 7일 뒤
 
-        List<Game> games = gameRepository.findByMatchDayBetweenAndStadium_Id(start, end, jamsil.getId());
+        List<Game> games = gameRepository.findByMatchDayBetweenAndStadium_Id(today, end, jamsil.getId());
         List<SeatTemplate> seatTemplates = seatTemplateRepository.findAll();
 
         List<Seat> seats = generateSeatsForGames(games, seatTemplates, jamsil);

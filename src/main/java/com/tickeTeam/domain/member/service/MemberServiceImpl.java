@@ -82,10 +82,9 @@ public class MemberServiceImpl implements MemberService {
     private Member getMemberByRequest(HttpServletRequest request) {
         // jwt 토큰으로부터 추출한 이메일로 사용자 조회
         String memberEmail = jwtUtil.getEmail(extractAccessToken(request));
-        Member findMember = memberRepository.findByEmail(memberEmail).orElseThrow(
+        return memberRepository.findByEmail(memberEmail).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
-        return findMember;
     }
 
     private String extractAccessToken(HttpServletRequest request) {

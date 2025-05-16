@@ -14,7 +14,7 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     List<Game> findByMatchDayBetweenAndStadium_Id(LocalDate startDate, LocalDate endDate, Long stadium_id);
 
     /**
-     * 특정 기간 내에 주어진 팀이 홈팀이거나 어웨이팀으로 참여하는 모든 경기를 조회(朝會)
+     * 특정 기간 내에 주어진 팀이 홈팀이거나 어웨이팀으로 참여하는 모든 경기를 조회
      * @param startDate 조회 시작일
      * @param endDate 조회 종료일
      * @param team 조회할 팀
