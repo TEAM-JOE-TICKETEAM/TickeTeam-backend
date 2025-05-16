@@ -104,7 +104,7 @@ class GameServiceTest {
             )).thenReturn(mockWeeklyGamesResponse);
 
             // 실행
-            ResultResponse resultResponse = gameService.findGamesInNextSevenDays(request);
+            ResultResponse resultResponse = gameService.getGamesInNextSevenDays(request);
 
             // 검증
             assertThat(resultResponse).isNotNull();
@@ -148,7 +148,7 @@ class GameServiceTest {
             when(mockWeeklyGamesResponse.getGames()).thenReturn(Collections.emptyList());
 
             // 실행
-            ResultResponse resultResponse = gameService.findGamesInNextSevenDays(request);
+            ResultResponse resultResponse = gameService.getGamesInNextSevenDays(request);
 
             // 검증
             assertThat(resultResponse).isNotNull();
@@ -184,7 +184,7 @@ class GameServiceTest {
             when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
 
             // 실행 & 검증
-            assertThatThrownBy(() -> gameService.findGamesInNextSevenDays(request))
+            assertThatThrownBy(() -> gameService.getGamesInNextSevenDays(request))
                     .isInstanceOf(NotFoundException.class)
                     .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
@@ -198,6 +198,6 @@ class GameServiceTest {
     @Test
     @DisplayName("선택한 경기 세부 정보 조회 성공 - 해당 경기의 좌석 정보를 반환합니다.")
     void 경기_선택_성공() {
-    
+
     }
 }

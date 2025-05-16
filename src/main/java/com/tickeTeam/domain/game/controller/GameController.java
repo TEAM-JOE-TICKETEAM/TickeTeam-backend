@@ -18,6 +18,6 @@ public class GameController {
 
     @GetMapping("/upcoming")
     public ResponseEntity<ResultResponse> getGamesInNextSevenDays(HttpServletRequest request){
-        return ResponseEntity.ok(gameService.findGamesInNextSevenDays(request));
+        return ResponseEntity.ok(gameService.getGamesInNextSevenDays(request));
     }
 }
