@@ -10,7 +10,6 @@ import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.entity.Seat;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
