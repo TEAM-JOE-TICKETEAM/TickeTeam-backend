@@ -194,10 +194,4 @@ class GameServiceTest {
             verifyNoInteractions(gameRepository); // 사용자 조회 실패 시 게임 조회 로직은 실행 안됨
         }
     }
-
-    @Test
-    @DisplayName("선택한 경기 세부 정보 조회 성공 - 해당 경기의 좌석 정보를 반환합니다.")
-    void 경기_선택_성공() {
-
-    }
 }
