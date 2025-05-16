@@ -17,6 +17,7 @@ public enum ErrorCode {
 
     // Game
     GAME_DATA_INSERT_ERROR(500,"GA001", "game 데이터 삽입 중 오류 발생"),
+    MATCH_NOT_FOUND(404, "GA002", "해당 경기를 찾을 수 없음"),
 
     // Team
     TEAM_NOT_FOUND(404,"T001","팀 찾을 수 없음"),

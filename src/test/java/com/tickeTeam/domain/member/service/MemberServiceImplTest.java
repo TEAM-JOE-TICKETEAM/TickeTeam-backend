@@ -57,7 +57,6 @@ class MemberServiceImplTest {
     @InjectMocks
     private MemberServiceImpl memberService;
 
-    // 테스트에 사용될 상수 정의
     private static final String ACCESS_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
@@ -151,10 +150,9 @@ class MemberServiceImplTest {
         when(teamRepository.findByTeamName(testSignUpRequest.getFavoriteTeam())).thenReturn(Optional.empty());
 
         // 실행
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            memberService.signUp(testSignUpRequest);
-        });
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.TEAM_NOT_FOUND);
+        assertThatThrownBy(() -> memberService.signUp(testSignUpRequest))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.TEAM_NOT_FOUND.getMessage());
 
         // 검증
         verify(memberRepository).existsByEmail(testSignUpRequest.getEmail());
@@ -191,10 +189,9 @@ class MemberServiceImplTest {
         when(request.getHeader(ACCESS_HEADER)).thenReturn(null);
 
         // 실행 & 검증
-        BusinessException exception = assertThrows(BusinessException.class, () -> {
-            memberService.myPage(request);
-        });
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.TOKEN_ACCESS_NOT_EXIST);
+        assertThatThrownBy(() -> memberService.myPage(request))
+                .isInstanceOf(BusinessException.class)
+                        .hasMessage(ErrorCode.TOKEN_ACCESS_NOT_EXIST.getMessage());
 
         verify(request).getHeader(ACCESS_HEADER);
         verifyNoInteractions(jwtUtil); // jwtUtil 호출 안되어야 함
@@ -210,10 +207,10 @@ class MemberServiceImplTest {
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            memberService.myPage(request);
-        });
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+        assertThatThrownBy(() -> memberService.myPage(request))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+
 
         verify(request).getHeader(ACCESS_HEADER);
         verify(jwtUtil).getEmail(testToken);
@@ -251,10 +248,9 @@ class MemberServiceImplTest {
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockExistingMember));
         when(teamRepository.findByTeamName(testUpdateRequest.getFavoriteTeam())).thenReturn(Optional.empty());
 
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            memberService.updateMember(testUpdateRequest, request);
-        });
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.TEAM_NOT_FOUND);
+        assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest, request))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.TEAM_NOT_FOUND.getMessage());
 
         verify(request).getHeader(ACCESS_HEADER);
         verify(jwtUtil).getEmail(testToken);
@@ -271,10 +267,9 @@ class MemberServiceImplTest {
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            memberService.updateMember(testUpdateRequest, request);
-        });
-        assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
+        assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest, request))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
         verify(request).getHeader(ACCESS_HEADER);
         verify(jwtUtil).getEmail(testToken);
