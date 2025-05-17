@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @ExtendWith(MockitoExtension.class)
 class GameServiceTest {
@@ -43,15 +51,6 @@ class GameServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
-
-    @Mock
-    private TeamRepository teamRepository;
-
-    @Mock
-    private HttpServletRequest request;
-
-    @Mock
-    private JwtUtil jwtUtil;
 
     @Mock
     private Team mockTeam;
@@ -65,34 +64,41 @@ class GameServiceTest {
     @InjectMocks
     GameService gameService;
 
-    private static final String ACCESS_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
-
-    private String testEmail;
-    private String testToken;
-    private LocalDate fixedCurrentDate;
-    private LocalDate endDate;
+    private final String testEmail = "test@example.com";
+    private final LocalDate fixedCurrentDate = LocalDate.of(2025, 5, 16);
+    private final LocalDate endDate = fixedCurrentDate.plusDays(7);
     private List<Game> mockGameList;
 
-    @BeforeEach
-    void setUp() {
-        testEmail = "test@example.com";
-        testToken = "testToken";
-        fixedCurrentDate = LocalDate.of(2025, 5, 16);
-        endDate = fixedCurrentDate.plusDays(7);
+    // SecurityContextHolder 설정을 위한 헬퍼 메소드
+    private void setupMockAuthentication(String email, String role) {
+        UserDetails userDetails = User.builder()
+                .username(email)
+                .password("password")
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(role)))
+                .build();
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
+    }
+
+    @AfterEach
+    void tearDown() {
+        // 각 테스트 후 SecurityContextHolder를 정리하여 테스트 간 독립성 보장
+        SecurityContextHolder.clearContext();
     }
 
     @Test
     @DisplayName("현재 날짜 기준 7일 이내의 응원팀 경기 조회 성공")
     void 응원팀_경기_조회_성공() {
+        setupMockAuthentication(testEmail, "USER");
+
         try (MockedStatic<LocalDate> mockedDate = mockStatic(LocalDate.class);
              MockedStatic<WeeklyGamesResponse> mockedResponse = mockStatic(WeeklyGamesResponse.class)) {
 
             // 준비
             mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
 
-            when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-            when(jwtUtil.getEmail(BEARER_PREFIX + testToken)).thenReturn(testEmail);
             when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
             when(mockMember.getFavoriteTeam()).thenReturn(mockTeam);
             mockGameList = List.of(mock(Game.class), mock(Game.class));
@@ -104,7 +110,7 @@ class GameServiceTest {
             )).thenReturn(mockWeeklyGamesResponse);
 
             // 실행
-            ResultResponse resultResponse = gameService.getGamesInNextSevenDays(request);
+            ResultResponse resultResponse = gameService.getGamesInNextSevenDays();
 
             // 검증
             assertThat(resultResponse).isNotNull();
@@ -112,8 +118,6 @@ class GameServiceTest {
             assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getMessage());
             assertThat(resultResponse.getData()).isEqualTo(mockWeeklyGamesResponse);
 
-            verify(request).getHeader(ACCESS_HEADER);
-            verify(jwtUtil).getEmail(BEARER_PREFIX + testToken);
             verify(memberRepository).findByEmail(testEmail);
             verify(mockMember).getFavoriteTeam();
             verify(gameRepository).findGamesByTeamAndDateRange(fixedCurrentDate, endDate, mockTeam);
@@ -126,14 +130,14 @@ class GameServiceTest {
     @Test
     @DisplayName("경기 목록 조회 - 7일 이내 경기가 존재하지 않으면 빈 리스트를 반환합니다")
     void 경기_조회_성공_경기_없음() {
+        setupMockAuthentication(testEmail, "USER");
+
         try (MockedStatic<LocalDate> mockedDate = mockStatic(LocalDate.class);
              MockedStatic<WeeklyGamesResponse> mockedResponse = mockStatic(WeeklyGamesResponse.class)) {
 
             // 준비
             mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
 
-            when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-            when(jwtUtil.getEmail(BEARER_PREFIX + testToken)).thenReturn(testEmail);
             when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
             when(mockMember.getFavoriteTeam()).thenReturn(mockTeam);
 
@@ -148,7 +152,7 @@ class GameServiceTest {
             when(mockWeeklyGamesResponse.getGames()).thenReturn(Collections.emptyList());
 
             // 실행
-            ResultResponse resultResponse = gameService.getGamesInNextSevenDays(request);
+            ResultResponse resultResponse = gameService.getGamesInNextSevenDays();
 
             // 검증
             assertThat(resultResponse).isNotNull();
@@ -159,8 +163,6 @@ class GameServiceTest {
             WeeklyGamesResponse resultResponseData = (WeeklyGamesResponse) resultResponse.getData();
             assertThat(resultResponseData.getGames()).isEqualTo(Collections.emptyList()); // 빈 리스트를 반환하는지 검증
 
-            verify(request).getHeader(ACCESS_HEADER);
-            verify(jwtUtil).getEmail(BEARER_PREFIX + testToken);
             verify(memberRepository).findByEmail(testEmail);
             verify(mockMember).getFavoriteTeam();
             verify(gameRepository).findGamesByTeamAndDateRange(fixedCurrentDate, endDate, mockTeam);
@@ -173,25 +175,26 @@ class GameServiceTest {
     @Test
     @DisplayName("경기 조회 실패 - 사용자 정보 없음")
     void 경기_조회_실패_사용자_못찾음() {
-        try (MockedStatic<LocalDate> mockedDate = mockStatic(LocalDate.class);
-             MockedStatic<WeeklyGamesResponse> mockedResponse = mockStatic(WeeklyGamesResponse.class)) {
+        setupMockAuthentication(testEmail, "USER");
 
-            // 준비
-            mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
 
-            when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-            when(jwtUtil.getEmail(BEARER_PREFIX + testToken)).thenReturn(testEmail);
-            when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
+        // 실행 & 검증
+        assertThatThrownBy(() -> gameService.getGamesInNextSevenDays())
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
-            // 실행 & 검증
-            assertThatThrownBy(() -> gameService.getGamesInNextSevenDays(request))
-                    .isInstanceOf(NotFoundException.class)
-                    .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+        verify(memberRepository).findByEmail(testEmail);
+        verifyNoInteractions(gameRepository); // 사용자 조회 실패 시 게임 조회 로직은 실행 안됨
+    }
 
-            verify(request).getHeader(ACCESS_HEADER);
-            verify(jwtUtil).getEmail(BEARER_PREFIX + testToken);
-            verify(memberRepository).findByEmail(testEmail);
-            verifyNoInteractions(gameRepository); // 사용자 조회 실패 시 게임 조회 로직은 실행 안됨
-        }
+    @Test
+    @DisplayName("경기 조회 실패 - 인증 정보 없음")
+    void 경기_조회_실패_인증_정보_없음() {
+        // 실행 & 검증
+        assertThatThrownBy(() -> gameService.getGamesInNextSevenDays())
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.AUTHENTICATION_NOT_FOUND.getMessage());
     }
 }

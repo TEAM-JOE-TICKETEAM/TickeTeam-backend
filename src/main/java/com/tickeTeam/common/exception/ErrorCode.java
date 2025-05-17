@@ -13,7 +13,7 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(500, "G001", "서버 오류"),
     INPUT_INVALID_VALUE(409, "G002", "잘못된 입력"),
     ACCESS_INVALID_VALUE(400, "G003", "잘못된 접근"),
-    TOKEN_ACCESS_NOT_EXIST(401, "A001", "토큰을 찾을 수 없음"),
+    AUTHENTICATION_NOT_FOUND(404, "G004", "로그인 사용자 정보 찾을 수 없음"),
 
     // Game
     GAME_DATA_INSERT_ERROR(500,"GA001", "game 데이터 삽입 중 오류 발생"),
@@ -30,6 +30,7 @@ public enum ErrorCode {
     // Member
     MEMBER_EMAIL_DUPLICATION_ERROR(400, "M001", "중복된 이메일"),
     MEMBER_NOT_FOUND(404, "M002", "해당 사용자를 찾을 수 없습니다.")
+
     // Reservation
     ;
 
