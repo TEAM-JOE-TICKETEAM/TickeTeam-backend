@@ -2,8 +2,8 @@ package com.tickeTeam.domain.member.controller;
 
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.domain.member.dto.request.MemberUpdateRequest;
-import com.tickeTeam.domain.member.service.MemberService;
 import com.tickeTeam.common.result.ResultResponse;
+import com.tickeTeam.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -28,13 +27,12 @@ public class MemberController {
     }
 
     @GetMapping("/mypage")
-    public ResponseEntity<ResultResponse> myPage(HttpServletRequest request) {
-        return ResponseEntity.ok(memberService.myPage(request));
+    public ResponseEntity<ResultResponse> myPage() {
+        return ResponseEntity.ok(memberService.myPage());
     }
 
     @PutMapping("/update")
-    public ResponseEntity<ResultResponse> updateMember(HttpServletRequest request,
-                                                       @RequestBody MemberUpdateRequest memberUpdateRequest) {
-        return ResponseEntity.ok(memberService.updateMember(memberUpdateRequest, request));
+    public ResponseEntity<ResultResponse> updateMember(@RequestBody MemberUpdateRequest memberUpdateRequest) {
+        return ResponseEntity.ok(memberService.updateMember(memberUpdateRequest));
     }
 }
