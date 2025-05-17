@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberServiceImpl implements MemberService {
 
     public static final String ACCESS_HEADER = "Authorization";
-    private static final String BEARER = "Bearer ";
 
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
@@ -81,17 +80,12 @@ public class MemberServiceImpl implements MemberService {
 
     private Member getMemberByRequest(HttpServletRequest request) {
         // jwt 토큰으로부터 추출한 이메일로 사용자 조회
-        String memberEmail = jwtUtil.getEmail(extractAccessToken(request));
+        String header = request.getHeader(ACCESS_HEADER);
+        if (header == null) throw new NotFoundException(ErrorCode.TOKEN_ACCESS_NOT_EXIST);
+        String memberEmail = jwtUtil.getEmail(header);
         return memberRepository.findByEmail(memberEmail).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
-    }
-
-    private String extractAccessToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(ACCESS_HEADER))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""))
-                .orElseThrow(() -> new BusinessException(ErrorCode.TOKEN_ACCESS_NOT_EXIST));
     }
 
 }

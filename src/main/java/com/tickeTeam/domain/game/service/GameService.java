@@ -1,7 +1,6 @@
 package com.tickeTeam.domain.game.service;
 
 import com.tickeTeam.common.exception.ErrorCode;
-import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
@@ -15,7 +14,6 @@ import com.tickeTeam.infrastructure.security.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +22,6 @@ import org.springframework.stereotype.Service;
 public class GameService {
 
     private static final String ACCESS_HEADER = "Authorization";
-    private static final String BEARER = "Bearer ";
 
     private final GameRepository gameRepository;
     private final MemberRepository memberRepository;
@@ -47,17 +44,12 @@ public class GameService {
 
     private Member getMemberByRequest(HttpServletRequest request) {
         // jwt 토큰으로부터 추출한 이메일로 사용자 조회
-        String memberEmail = jwtUtil.getEmail(extractAccessToken(request));
+        String header = request.getHeader(ACCESS_HEADER);
+        if (header == null) throw new NotFoundException(ErrorCode.TOKEN_ACCESS_NOT_EXIST);
+        String memberEmail = jwtUtil.getEmail(header);
         return memberRepository.findByEmail(memberEmail).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
-    }
-
-    private String extractAccessToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(ACCESS_HEADER))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""))
-                .orElseThrow(() -> new BusinessException(ErrorCode.TOKEN_ACCESS_NOT_EXIST));
     }
 
 }

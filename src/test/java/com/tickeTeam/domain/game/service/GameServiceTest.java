@@ -92,7 +92,7 @@ class GameServiceTest {
             mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
 
             when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-            when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
+            when(jwtUtil.getEmail(BEARER_PREFIX + testToken)).thenReturn(testEmail);
             when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
             when(mockMember.getFavoriteTeam()).thenReturn(mockTeam);
             mockGameList = List.of(mock(Game.class), mock(Game.class));
@@ -113,7 +113,7 @@ class GameServiceTest {
             assertThat(resultResponse.getData()).isEqualTo(mockWeeklyGamesResponse);
 
             verify(request).getHeader(ACCESS_HEADER);
-            verify(jwtUtil).getEmail(testToken);
+            verify(jwtUtil).getEmail(BEARER_PREFIX + testToken);
             verify(memberRepository).findByEmail(testEmail);
             verify(mockMember).getFavoriteTeam();
             verify(gameRepository).findGamesByTeamAndDateRange(fixedCurrentDate, endDate, mockTeam);
@@ -133,7 +133,7 @@ class GameServiceTest {
             mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
 
             when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-            when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
+            when(jwtUtil.getEmail(BEARER_PREFIX + testToken)).thenReturn(testEmail);
             when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
             when(mockMember.getFavoriteTeam()).thenReturn(mockTeam);
 
@@ -160,7 +160,7 @@ class GameServiceTest {
             assertThat(resultResponseData.getGames()).isEqualTo(Collections.emptyList()); // 빈 리스트를 반환하는지 검증
 
             verify(request).getHeader(ACCESS_HEADER);
-            verify(jwtUtil).getEmail(testToken);
+            verify(jwtUtil).getEmail(BEARER_PREFIX + testToken);
             verify(memberRepository).findByEmail(testEmail);
             verify(mockMember).getFavoriteTeam();
             verify(gameRepository).findGamesByTeamAndDateRange(fixedCurrentDate, endDate, mockTeam);
@@ -172,7 +172,7 @@ class GameServiceTest {
 
     @Test
     @DisplayName("경기 조회 실패 - 사용자 정보 없음")
-    void 경기_조회_실패_사용자_못찾음(){
+    void 경기_조회_실패_사용자_못찾음() {
         try (MockedStatic<LocalDate> mockedDate = mockStatic(LocalDate.class);
              MockedStatic<WeeklyGamesResponse> mockedResponse = mockStatic(WeeklyGamesResponse.class)) {
 
@@ -180,7 +180,7 @@ class GameServiceTest {
             mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
 
             when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-            when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
+            when(jwtUtil.getEmail(BEARER_PREFIX + testToken)).thenReturn(testEmail);
             when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
 
             // 실행 & 검증
@@ -189,7 +189,7 @@ class GameServiceTest {
                     .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
             verify(request).getHeader(ACCESS_HEADER);
-            verify(jwtUtil).getEmail(testToken);
+            verify(jwtUtil).getEmail(BEARER_PREFIX + testToken);
             verify(memberRepository).findByEmail(testEmail);
             verifyNoInteractions(gameRepository); // 사용자 조회 실패 시 게임 조회 로직은 실행 안됨
         }
