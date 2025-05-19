@@ -3,9 +3,12 @@ package com.tickeTeam.domain.sectionPrice.entity;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,8 +31,9 @@ public class SectionPrice {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "stadium")
-    private Stadium stadium;
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_stadium")
+    private Stadium sectionStadium;
 
     @Column(name = "seat_section")
     private String seatSection;
@@ -39,7 +43,7 @@ public class SectionPrice {
 
     public static SectionPrice of(Stadium stadium, String seatSection, int sectionPrice){
         return SectionPrice.builder()
-                .stadium(stadium)
+                .sectionStadium(stadium)
                 .seatSection(seatSection)
                 .sectionPrice(sectionPrice)
                 .build();
