@@ -75,7 +75,7 @@ public class MemberService{
     public ResultResponse memberVerification(MemberVerificationRequest memberVerificationRequest) {
         Member findMember = getMemberByAuthentication();
 
-        if (!memberVerificationRequest.getEmail().equals(findMember.getEmail()) || !memberVerificationRequest.getName().equals(findMember.getEmail())){
+        if (!memberVerificationRequest.getEmail().equals(findMember.getEmail()) || !memberVerificationRequest.getName().equals(findMember.getName())){
             throw new BusinessException(ErrorCode.MEMBER_VERIFICATION_FAIL);
         }
 

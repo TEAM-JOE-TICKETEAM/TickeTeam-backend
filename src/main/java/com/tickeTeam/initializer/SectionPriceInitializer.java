@@ -23,7 +23,7 @@ public class SectionPriceInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
 
         Stadium stadiumJamsil = stadiumRepository.findByStadiumName("잠실 야구장")
-                .orElse(stadiumRepository.save(Stadium.of("잠실 야구장")));
+                .orElseThrow();
 
         if (sectionPriceRepository.count() == 0) {
             List<SectionPrice> sectionPrices = List.of(
