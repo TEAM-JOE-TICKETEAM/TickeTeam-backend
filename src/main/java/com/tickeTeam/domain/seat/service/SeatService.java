@@ -1,6 +1,7 @@
 package com.tickeTeam.domain.seat.service;
 
 import com.tickeTeam.common.exception.ErrorCode;
+import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
@@ -43,8 +44,8 @@ public class SeatService {
 
         // 교착상태 방지를 위해 가져온 좌석 Id 들에 오름차순 정렬 적용
         List<Long> selectedSeatIds = selectRequest.getSeatIds();
-        for (Long selectedSeatId : selectedSeatIds) {
-            System.out.println("input ids: "+selectedSeatId);
+        if (selectedSeatIds.size() >= 4){
+            throw new BusinessException(ErrorCode.SEAT_LIMIT_OVER);
         }
         Collections.sort(selectedSeatIds);
 

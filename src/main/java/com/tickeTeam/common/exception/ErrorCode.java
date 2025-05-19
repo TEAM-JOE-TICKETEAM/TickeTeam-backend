@@ -28,6 +28,7 @@ public enum ErrorCode {
     // Seat
     SEAT_ALREADY_HELD(400, "S001", "이미 예약되어있는 좌석"),
     SEAT_CANNOT_BE_HELD(400, "S002","해당 좌석을 선점할 수 없습니다."),
+    SEAT_LIMIT_OVER(400, "S002","인당 좌석은 최대 4석까지만 선택 가능합니다."),
 
     // Member
     MEMBER_EMAIL_DUPLICATION_ERROR(400, "M001", "중복된 이메일"),
