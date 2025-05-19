@@ -1,6 +1,9 @@
 package com.tickeTeam.domain.seat.entity;
 
+import com.tickeTeam.common.exception.ErrorCode;
+import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.domain.game.entity.Game;
+import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,4 +47,20 @@ public class Seat {
     @Column(name = "seat_status")
     @Enumerated(value = EnumType.STRING)
     private SeatStatus seatStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "hold_member")
+    private Member holdMember;
+
+    public void seatHold(Member member){
+        if (this.seatStatus == SeatStatus.HELD && this.holdMember != null && !this.holdMember.getId().equals(member.getId())) {
+            throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
+        }
+        if (this.seatStatus != SeatStatus.AVAILABLE){
+            throw new BusinessException(ErrorCode.SEAT_CANNOT_BE_HELD);
+        }
+
+        this.seatStatus = SeatStatus.HELD;
+        this.holdMember = member;
+    }
 }
