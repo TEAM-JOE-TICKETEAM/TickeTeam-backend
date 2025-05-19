@@ -1,8 +1,10 @@
 package com.tickeTeam.domain.member.service;
 
 import com.tickeTeam.common.exception.ErrorCode;
+import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
 import com.tickeTeam.domain.member.dto.request.MemberUpdateRequest;
+import com.tickeTeam.domain.member.dto.request.MemberVerificationRequest;
 import com.tickeTeam.domain.member.dto.response.MyPageResponse;
 import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.repository.MemberRepository;
@@ -68,6 +70,16 @@ public class MemberService{
         findMember.update(memberUpdateRequest, findTeam);
 
         return ResultResponse.of(ResultCode.MEMBER_UPDATE_SUCCESS);
+    }
+
+    public ResultResponse memberVerification(MemberVerificationRequest memberVerificationRequest) {
+        Member findMember = getMemberByAuthentication();
+
+        if (!memberVerificationRequest.getEmail().equals(findMember.getEmail()) || !memberVerificationRequest.getName().equals(findMember.getEmail())){
+            throw new BusinessException(ErrorCode.MEMBER_VERIFICATION_FAIL);
+        }
+
+        return ResultResponse.of(ResultCode.MEMBER_VERIFICATION_SUCCESS);
     }
 
     private Member getMemberByAuthentication() {

@@ -3,9 +3,11 @@ package com.tickeTeam.domain.member.controller;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.domain.member.dto.request.MemberUpdateRequest;
 import com.tickeTeam.common.result.ResultResponse;
+import com.tickeTeam.domain.member.dto.request.MemberVerificationRequest;
 import com.tickeTeam.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,5 +36,10 @@ public class MemberController {
     @PutMapping("/update")
     public ResponseEntity<ResultResponse> updateMember(@RequestBody MemberUpdateRequest memberUpdateRequest) {
         return ResponseEntity.ok(memberService.updateMember(memberUpdateRequest));
+    }
+
+    @GetMapping("/verification")
+    public ResponseEntity<ResultResponse> MemberVerification(@RequestBody MemberVerificationRequest memberVerificationRequest){
+        return ResponseEntity.ok(memberService.memberVerification(memberVerificationRequest));
     }
 }

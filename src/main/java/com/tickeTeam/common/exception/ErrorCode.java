@@ -32,7 +32,8 @@ public enum ErrorCode {
 
     // Member
     MEMBER_EMAIL_DUPLICATION_ERROR(400, "M001", "중복된 이메일"),
-    MEMBER_NOT_FOUND(404, "M002", "해당 사용자를 찾을 수 없습니다.")
+    MEMBER_NOT_FOUND(404, "M002", "해당 사용자를 찾을 수 없습니다."),
+    MEMBER_VERIFICATION_FAIL(403, "M003","예약자 확인 실패"),
 
     // Reservation
     ;
