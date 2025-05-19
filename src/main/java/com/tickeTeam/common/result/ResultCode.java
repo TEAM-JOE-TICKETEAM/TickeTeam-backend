@@ -24,6 +24,10 @@ public enum ResultCode {
     // Seat
     GET_GAME_SEAT_SUCCESS("S001", "경기 좌석 조회에 성공했습니다."),
     SEATS_SELECT_SUCCESS("S002", "좌석 선점에 성공했습니다."),
+
+    // SectionPrice
+    SECTION_PRICE_CHECK_SUCCESS("SE001", "선택 좌석(들)의 구역 가격 조회에 성공했습니다."),
+
     ;
 
     private final String code;

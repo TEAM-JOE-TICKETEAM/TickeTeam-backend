@@ -13,6 +13,7 @@ import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
 import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.entity.Seat;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
+import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
 import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SeatService {
 
     private final SeatRepository seatRepository;
+    private final SectionPriceRepository sectionPriceRepository;
     private final GameRepository gameRepository;
     private final MemberRepository memberRepository;
 
@@ -39,6 +41,7 @@ public class SeatService {
     }
 
     // 좌석 선택(다중 선택 가능, 선택 시 해당 좌석에 선점 적용(7분))
+    // 한 번에 인당 최대 4석, 같은 구역 내에서만 다중 선택 가능
     @Transactional
     public ResultResponse selectSeats(SeatSelectRequest selectRequest){
 

@@ -30,6 +30,9 @@ public enum ErrorCode {
     SEAT_CANNOT_BE_HELD(400, "S002","해당 좌석을 선점할 수 없습니다."),
     SEAT_LIMIT_OVER(400, "S002","인당 좌석은 최대 4석까지만 선택 가능합니다."),
 
+    // SectionPrice
+    SECTION_PRICE_NOT_FOUND(404, "SE001", "해당 좌석의 구역 가격을 찾을 수 없습니다."),
+
     // Member
     MEMBER_EMAIL_DUPLICATION_ERROR(400, "M001", "중복된 이메일"),
     MEMBER_NOT_FOUND(404, "M002", "해당 사용자를 찾을 수 없습니다."),
