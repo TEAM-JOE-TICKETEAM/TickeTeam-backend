@@ -17,6 +17,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Component;
 @Order(3)
 @Component
 @RequiredArgsConstructor
+@Profile("!test")
 public class SeatInitializer implements ApplicationRunner {
 
     public static final int DAYS_FROM_TODAY = 1;
