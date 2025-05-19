@@ -8,11 +8,13 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Stadium {
@@ -26,6 +28,6 @@ public class Stadium {
     private String stadiumName;
 
     public static Stadium of(String name){
-        return new Stadium(null, name);
+        return Stadium.builder().stadiumName(name).build();
     }
 }
