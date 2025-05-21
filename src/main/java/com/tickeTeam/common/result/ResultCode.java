@@ -28,6 +28,8 @@ public enum ResultCode {
     // SectionPrice
     SECTION_PRICE_CHECK_SUCCESS("SE001", "선택 좌석(들)의 구역 가격 조회에 성공했습니다."),
 
+    // Ticket
+    TICKET_ISSUE_SUCCESS("T001", "티켓 발행에 성공했습니다.")
     ;
 
     private final String code;

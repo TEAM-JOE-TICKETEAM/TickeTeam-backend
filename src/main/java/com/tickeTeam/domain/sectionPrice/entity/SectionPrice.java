@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.time.LocalDate;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,6 +42,14 @@ public class SectionPrice {
 
     @Column(name = "section_price")
     private int sectionPrice;
+
+    public int getSectionPrice(LocalDate matchDay) {
+        int dayOfWeekValue = matchDay.getDayOfWeek().getValue();
+        if (dayOfWeekValue == 6 || dayOfWeekValue == 7){ // 주말 경기면
+            return  (int)Math.floor(this.sectionPrice * 1.1);
+        }
+        return sectionPrice;
+    }
 
     public static SectionPrice of(Stadium stadium, String seatSection, int sectionPrice){
         return SectionPrice.builder()

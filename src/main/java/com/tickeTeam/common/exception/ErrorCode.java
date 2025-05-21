@@ -38,7 +38,8 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(404, "M002", "해당 사용자를 찾을 수 없습니다."),
     MEMBER_VERIFICATION_FAIL(403, "M003","예약자 확인 실패"),
 
-    // Reservation
+    // Ticket
+    HOLD_MEMBER_NOT_MATCH(400, "T001", "좌석 선점 멤버와 요청 멤버가 일치하지 않습니다.")
     ;
 
     private final int status;

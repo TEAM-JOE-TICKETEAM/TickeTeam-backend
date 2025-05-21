@@ -19,11 +19,7 @@ public class SectionPriceService {
     public ResultResponse getSectionPrice(SectionPriceRequest request) {
         SectionPrice sectionPrice = sectionPriceRepository.findBySeatSection(request.getSectionName());
 
-        int price = sectionPrice.getSectionPrice();
-        int dayOfWeekValue = request.getMatchDay().getDayOfWeek().getValue();
-        if (dayOfWeekValue == 6 || dayOfWeekValue == 7){
-            price = (int)Math.floor(sectionPrice.getSectionPrice() * 1.1);
-        }
+        int price = sectionPrice.getSectionPrice(request.getMatchDay());
 
         return ResultResponse.of(ResultCode.SECTION_PRICE_CHECK_SUCCESS,
                 SectionPriceResponse.of(request.getSectionName(), price, request.getSeatCount()));

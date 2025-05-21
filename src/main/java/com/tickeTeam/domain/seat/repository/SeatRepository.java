@@ -13,4 +13,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     public List<Seat> findAllByIdIn(List<Long> seatIds);
+
+    public List<Seat> findByIdIn(List<Long> seatIds);
+
 }

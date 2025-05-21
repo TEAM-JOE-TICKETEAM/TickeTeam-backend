@@ -63,4 +63,8 @@ public class Seat {
         this.seatStatus = SeatStatus.HELD;
         this.holdMember = member;
     }
+
+    public void seatReserve(){
+        this.seatStatus = SeatStatus.RESERVED;
+    }
 }
