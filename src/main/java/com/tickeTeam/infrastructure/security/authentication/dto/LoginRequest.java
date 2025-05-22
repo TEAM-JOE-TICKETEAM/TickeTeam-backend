@@ -3,12 +3,13 @@ package com.tickeTeam.infrastructure.security.authentication.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor
 public class LoginRequest {
 
-    private final String email;
-    private final String password;
+    private String email;
+    private String password;
 }
