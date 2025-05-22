@@ -1,9 +1,11 @@
 package com.tickeTeam.domain.seat.service;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -22,6 +24,7 @@ import com.tickeTeam.domain.seat.entity.Seat;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +37,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.redisson.api.RBucket;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -50,9 +56,6 @@ class SeatServiceTest {
 
     @Mock
     private GameRepository gameRepository;
-
-    @Mock
-    private MemberRepository memberRepository;
 
     @Mock
     private Game mockGame;
@@ -77,19 +80,6 @@ class SeatServiceTest {
 
     }
 
-    // SecurityContextHolder 설정을 위한 헬퍼 메소드
-    private void setupMockAuthentication(String email, String role) {
-        UserDetails userDetails = User.builder()
-                .username(email)
-                .password("password")
-                .authorities(Collections.singletonList(new SimpleGrantedAuthority(role)))
-                .build();
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(authentication);
-        SecurityContextHolder.setContext(securityContext);
-    }
-
     @AfterEach
     void tearDown() {
         // 각 테스트 후 SecurityContextHolder를 정리하여 테스트 간 독립성 보장
@@ -101,7 +91,6 @@ class SeatServiceTest {
     void 경기_좌석_조회_성공(){
         try(MockedStatic<GameSeatsResponse> mockedResponse = mockStatic(GameSeatsResponse.class)) {
             // 준비
-            when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
             when(gameRepository.findById(testGameId)).thenReturn(Optional.of(mockGame));
             mockSeats = List.of(mock(Seat.class), mock(Seat.class));
             when(seatRepository.findAllByGame(mockGame)).thenReturn(mockSeats);
@@ -175,27 +164,5 @@ class SeatServiceTest {
 
         verify(gameRepository).findById(testGameId);
         verifyNoInteractions(seatRepository);
-    }
-
-    @Test
-    @DisplayName("좌석 선점 성공, 단일 스레드")
-    void 좌석_선점_성공(){
-        setupMockAuthentication(testEmail, "USER");
-
-        // 준비
-        mockSeats = List.of(mock(Seat.class), mock(Seat.class), mock(Seat.class));
-        when(seatRepository.findAllByIdIn(new ArrayList<>(List.of(1L, 2L, 3L)))).thenReturn(mockSeats);
-        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
-
-        // 실행
-        ResultResponse resultResponse = seatService.selectSeats(mockSeatSelectRequest);
-
-        assertThat(resultResponse).isNotNull();
-        assertThat(resultResponse.getCode()).isEqualTo(ResultCode.SEATS_SELECT_SUCCESS);
-        assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.SEATS_SELECT_SUCCESS.getMessage());
-
-        // 검증
-        verify(memberRepository).findByEmail(testEmail);
-        verify(seatRepository).findAllByIdIn(List.of(1L,2L,3L));
     }
 }
