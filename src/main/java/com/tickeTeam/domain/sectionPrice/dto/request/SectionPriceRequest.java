@@ -7,11 +7,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @NoArgsConstructor
 public class SectionPriceRequest {
 
     private String sectionName;
     private int seatCount;
     private LocalDate matchDay;
+
+
 }

@@ -7,7 +7,6 @@ import com.tickeTeam.domain.sectionPrice.dto.response.SectionPriceResponse;
 import com.tickeTeam.domain.sectionPrice.entity.SectionPrice;
 import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 @Service
