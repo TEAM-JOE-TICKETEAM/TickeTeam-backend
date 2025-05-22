@@ -11,7 +11,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
 
     public List<Seat> findAllByGame(Game game);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
     public List<Seat> findAllByIdIn(List<Long> seatIds);
 
     public List<Seat> findByIdIn(List<Long> seatIds);

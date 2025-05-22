@@ -26,9 +26,13 @@ public enum ErrorCode {
     STADIUM_NOT_FOUND(404,"ST001","경기장 찾을 수 없음"),
 
     // Seat
-    SEAT_ALREADY_HELD(400, "S001", "이미 예약되어있는 좌석"),
+    SEAT_ALREADY_HELD(400, "S001", "이미 예약되어있는 좌석입니다."),
     SEAT_CANNOT_BE_HELD(400, "S002","해당 좌석을 선점할 수 없습니다."),
     SEAT_LIMIT_OVER(400, "S002","인당 좌석은 최대 4석까지만 선택 가능합니다."),
+
+    // Lock
+    CANNOT_GET_LOCK(400, "L001", "선택 좌석 중 락을 획득할 수 없는 좌석이 있습니다."),
+    INTERRUPTED_WHILE_LOCKING(500,"L002", "락을 획득하는 도중 인터럽트가 발생했습니다."),
 
     // SectionPrice
     SECTION_PRICE_NOT_FOUND(404, "SE001", "해당 좌석의 구역 가격을 찾을 수 없습니다."),
@@ -39,7 +43,8 @@ public enum ErrorCode {
     MEMBER_VERIFICATION_FAIL(403, "M003","예약자 확인 실패"),
 
     // Ticket
-    HOLD_MEMBER_NOT_MATCH(400, "T001", "좌석 선점 멤버와 요청 멤버가 일치하지 않습니다.")
+    SEAT_HELD_BY_OTHER(400, "T001", "해당 좌석은 다른 사용자에게 선점된 상태입니다."),
+    SEAT_NOT_HELD(400, "T002", "해당 좌석은 선점되어있지 않습니다."),
     ;
 
     private final int status;

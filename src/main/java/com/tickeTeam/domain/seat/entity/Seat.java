@@ -48,12 +48,8 @@ public class Seat {
     @Enumerated(value = EnumType.STRING)
     private SeatStatus seatStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "hold_member")
-    private Member holdMember;
-
-    public void seatHold(Member member){
-        if (this.seatStatus == SeatStatus.HELD && this.holdMember != null && !this.holdMember.getId().equals(member.getId())) {
+    public void seatHold(){
+        if (this.seatStatus == SeatStatus.HELD) {
             throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
         }
         if (this.seatStatus != SeatStatus.AVAILABLE){
@@ -61,7 +57,10 @@ public class Seat {
         }
 
         this.seatStatus = SeatStatus.HELD;
-        this.holdMember = member;
+    }
+
+    public void seatRelease(){
+        this.seatStatus = SeatStatus.AVAILABLE;
     }
 
     public void seatReserve(){

@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RedissonClient;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,14 +40,15 @@ public class TicketService {
     private final SeatRepository seatRepository;
     private final GameRepository gameRepository;
     private final MemberRepository memberRepository;
+    private final RedissonClient redissonClient;
 
+    @Transactional
     public ResultResponse issueTickets(TicketIssueRequest ticketIssueRequest) {
         Member member = getMemberByAuthentication();
 
         List<Seat> seats = seatRepository.findByIdIn(ticketIssueRequest.getSeatIds());
 
-        // 티켓 발급 요청 멤버와 좌석을 선점한 멤버가 동일인물인지 확인
-        checkHoldMember(seats, member);
+        checkIsHold(seats, member); // 각 좌석들이 해당 사용자에게 선점된 좌석이 맞는지 확인
 
         Game targetMatch = gameRepository.findById(ticketIssueRequest.getGameId())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
@@ -64,16 +67,27 @@ public class TicketService {
 
             newReservation.addTicket(ticketRepository.save(newTicket));
 
+            // 티켓이 발행된 좌석은 RESERVED로 상태 변경
             seat.seatReserve();
+
+            // Redis에서 선점 정보 삭제
+            String holdKey = "seat:" + seat.getId() + ":heldBy";
+            redissonClient.getBucket(holdKey).delete();
         }
 
         return ResultResponse.of(ResultCode.TICKET_ISSUE_SUCCESS, ReservationInfoResponse.from(newReservation, member, targetMatch));
     }
 
-    private static void checkHoldMember(List<Seat> seats, Member member) {
+    private void checkIsHold(List<Seat> seats, Member member) {
         for (Seat seat : seats) {
-            if(!seat.getHoldMember().equals(member))
-                throw new BusinessException(ErrorCode.HOLD_MEMBER_NOT_MATCH);
+            String holdKey = "seat:" + seat.getId() + ":heldBy";
+            String holderId = (String) redissonClient.getBucket(holdKey).get();
+            if (holderId == null) {
+                throw new BusinessException(ErrorCode.SEAT_NOT_HELD);
+            }
+            if (!holderId.equals(member.getEmail())) {
+                throw new BusinessException(ErrorCode.SEAT_HELD_BY_OTHER);
+            }
         }
     }
 
