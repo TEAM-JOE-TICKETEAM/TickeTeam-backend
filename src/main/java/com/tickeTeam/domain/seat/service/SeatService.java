@@ -12,7 +12,6 @@ import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
 import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.entity.Seat;
-import com.tickeTeam.domain.seat.entity.SeatStatus;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import java.util.ArrayList;
 import java.util.Collections;

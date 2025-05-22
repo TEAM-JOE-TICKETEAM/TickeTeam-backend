@@ -8,11 +8,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.tickeTeam.common.exception.ErrorCode;
+import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.domain.member.dto.request.MemberUpdateRequest;
+import com.tickeTeam.domain.member.dto.request.MemberVerificationRequest;
 import com.tickeTeam.domain.member.dto.response.MyPageResponse;
 import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.entity.MemberRole;
@@ -62,6 +64,7 @@ class MemberServiceTest {
     private Member testMember;
     private MemberSignUpRequest testSignUpRequest;
     private MemberUpdateRequest testUpdateRequest;
+    private MemberVerificationRequest testVerificationRequest;
     private final Team testTeam = Team.of("두산 베어스");
     private final Team updateTeam = Team.of("LG 트윈스");
     private final String testEmail = "test@example.com";
@@ -102,6 +105,8 @@ class MemberServiceTest {
                 .name("updateTester")
                 .favoriteTeam("LG 트윈스")
                 .build();
+
+        testVerificationRequest = MemberVerificationRequest.of("test@example.com", "tester");
     }
 
     @AfterEach
@@ -280,5 +285,71 @@ class MemberServiceTest {
         assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.AUTHENTICATION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("예약자 확인 성공")
+    void 예약자_확인_성공() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
+
+        // 실행
+        ResultResponse resultResponse = memberService.memberVerification(testVerificationRequest);
+
+        // 검증
+        assertThat(resultResponse).isNotNull();
+        assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.MEMBER_VERIFICATION_SUCCESS.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
+    }
+
+    @Test
+    @DisplayName("예약자 확인 실패 - 비교 결과 이름이 다름")
+    void 예약자_확인_실패_이름() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
+
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.memberVerification(MemberVerificationRequest.of(testEmail, "other name")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.MEMBER_VERIFICATION_FAIL.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
+    }
+
+    @Test
+    @DisplayName("예약자 확인 실패 - 비교 결과 이메일이 다름")
+    void 예약자_확인_실패_이메일() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
+
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.memberVerification(MemberVerificationRequest.of("wrong@example.com", "tester")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.MEMBER_VERIFICATION_FAIL.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
+    }
+
+    @Test
+    @DisplayName("예약자 확인 실패 - 비교 결과 이름이 다름")
+    void 예약자_확인_실패_사용자_못찾음() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
+
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.memberVerification(MemberVerificationRequest.of(testEmail, "tester")))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
     }
 }
