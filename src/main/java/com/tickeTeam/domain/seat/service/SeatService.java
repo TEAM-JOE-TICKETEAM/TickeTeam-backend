@@ -76,7 +76,6 @@ public class SeatService {
                 }
 
                 acquiredLocks.add(lock); // 획득한 락 저장
-
                 // 이미 선점된 좌석인지 확인
                 String redisKey = key + ":heldBy";
                 String existingUserId = (String) redissonClient.getBucket(redisKey).get();
@@ -128,69 +127,6 @@ public class SeatService {
         return memberRepository.findByEmail(memberEmail).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
-    }
-
-    // 아래 메서드들은 삭제 예정
-    public void holdSeatWithRedissonLock(Seat seat) {
-        final String key = keyResolver(seat.getId());
-        final RLock lock = redissonClient.getLock(key + ":lock");
-        final String thread = Thread.currentThread().getName();
-
-        try {
-            if (!lock.tryLock(1, 3, TimeUnit.SECONDS)) {
-                log.info("[{}] 락 획득 실패", thread);
-                return;
-            }
-
-            if (seat.getSeatStatus()==SeatStatus.HELD) {
-                log.info("[{}] 이미 선점된 좌석", thread);
-                return;
-            }
-
-            seat.seatHold();
-            seatRepository.save(seat);
-            log.info("[{}] 좌석 선점 성공", thread);
-
-        } catch (InterruptedException e) {
-            log.error("Interrupted", e);
-        } finally {
-            if (lock!=null && lock.isLocked() && lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
-        }
-    }
-
-    public void holdSeatWithRedissonLockWithRelease(Seat seat) {
-        final String key = keyResolver(seat.getId());
-        final RLock lock = redissonClient.getLock(key + ":lock");
-        final String thread = Thread.currentThread().getName();
-
-        try {
-            if (!lock.tryLock(1, 5, TimeUnit.SECONDS)) {
-                log.info("[{}] 락 획득 실패", thread);
-                return;
-            }
-
-            if (seat.getSeatStatus()==SeatStatus.HELD) {
-                log.info("[{}] 이미 선점된 좌석", thread);
-                return;
-            }
-
-            seat.seatHold();
-            seatRepository.save(seat);
-            log.info("[{}] 좌석 선점 성공", thread);
-            log.info("현재 SeatStatus: {}", seat.getSeatStatus());
-
-        } catch (InterruptedException e) {
-            log.error("Interrupted", e);
-        } finally {
-            if (lock!=null && lock.isLocked() && lock.isHeldByCurrentThread()) {
-                lock.unlock();
-                seat.seatRelease();
-                seatRepository.save(seat);
-                log.info("반납 후 SeatStatus: {}", seat.getSeatStatus());
-            }
-        }
     }
 
 }
