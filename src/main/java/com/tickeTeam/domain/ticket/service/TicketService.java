@@ -14,6 +14,7 @@ import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.sectionPrice.entity.SectionPrice;
 import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
 import com.tickeTeam.domain.ticket.dto.request.TicketIssueRequest;
+import com.tickeTeam.domain.ticket.dto.request.TicketingCancelRequest;
 import com.tickeTeam.domain.ticket.dto.response.ReservationInfoResponse;
 import com.tickeTeam.domain.ticket.entity.Reservation;
 import com.tickeTeam.domain.ticket.entity.Ticket;
@@ -78,6 +79,27 @@ public class TicketService {
         return ResultResponse.of(ResultCode.TICKET_ISSUE_SUCCESS, ReservationInfoResponse.from(newReservation, member, targetMatch));
     }
 
+    // 티켓팅 시퀀스 도중 취소 요청 처리 메서드
+    @Transactional
+    public ResultResponse cancelTicketing(TicketingCancelRequest ticketingCancelRequest) {
+        Member member = getMemberByAuthentication();
+
+        List<Seat> seats = seatRepository.findByIdIn(ticketingCancelRequest.getSeatIds());
+
+        checkIsHold(seats, member); // 각 좌석들이 해당 사용자에게 선점된 좌석이 맞는지 확인
+
+        for (Seat seat : seats) {
+            // 다시 AVAILABLE 상태로 변경
+            seat.seatRelease();
+
+            // Redis에서 선점 정보 삭제
+            String holdKey = "seat:" + seat.getId() + ":heldBy";
+            redissonClient.getBucket(holdKey).delete();
+        }
+
+        return ResultResponse.of(ResultCode.TICKETING_CANCEL_SUCCESS);
+    }
+
     private void checkIsHold(List<Seat> seats, Member member) {
         for (Seat seat : seats) {
             String holdKey = "seat:" + seat.getId() + ":heldBy";
@@ -115,4 +137,6 @@ public class TicketService {
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
     }
+
+
 }

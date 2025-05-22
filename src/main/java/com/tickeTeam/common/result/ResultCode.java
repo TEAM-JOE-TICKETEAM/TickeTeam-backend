@@ -29,7 +29,8 @@ public enum ResultCode {
     SECTION_PRICE_CHECK_SUCCESS("SE001", "선택 좌석(들)의 구역 가격 조회에 성공했습니다."),
 
     // Ticket
-    TICKET_ISSUE_SUCCESS("T001", "티켓 발행에 성공했습니다.")
+    TICKET_ISSUE_SUCCESS("T001", "티켓 발행에 성공했습니다."),
+    TICKETING_CANCEL_SUCCESS("T002", "티켓팅 과정 취소에 성공했습니다.")
     ;
 
     private final String code;
