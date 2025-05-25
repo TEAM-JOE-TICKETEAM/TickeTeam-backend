@@ -21,7 +21,6 @@ import com.tickeTeam.domain.ticket.entity.Ticket;
 import com.tickeTeam.domain.ticket.repository.ReservationRepository;
 import com.tickeTeam.domain.ticket.repository.TicketRepository;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -54,10 +53,12 @@ public class TicketService {
         Game targetMatch = gameRepository.findById(ticketIssueRequest.getGameId())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
 
-        Reservation newReservation = getNewReservation(targetMatch, member);
+        Reservation newReservation = creatAndSaveReservation(targetMatch, member);
+
+        SectionPrice sectionPrice = sectionPriceRepository
+                .findBySeatSection(seats.get(0).getSeatTemplate().getSeatInfo().getSeatSection());
 
         for (Seat seat : seats) {
-            SectionPrice sectionPrice = sectionPriceRepository.findBySeatSection(seat.getSeatTemplate().getSeatInfo().getSeatSection());
 
             Ticket newTicket = Ticket.builder()
                     .seatInfo(seat.getSeatTemplate().getSeatInfo())
@@ -104,6 +105,7 @@ public class TicketService {
         for (Seat seat : seats) {
             String holdKey = "seat:" + seat.getId() + ":heldBy";
             String holderId = (String) redissonClient.getBucket(holdKey).get();
+            System.out.println("horderId: "+ holderId);
             if (holderId == null) {
                 throw new BusinessException(ErrorCode.SEAT_NOT_HELD);
             }
@@ -113,7 +115,7 @@ public class TicketService {
         }
     }
 
-    private Reservation getNewReservation(Game targetMatch, Member member) {
+    private Reservation creatAndSaveReservation(Game targetMatch, Member member) {
         Reservation newReservation = Reservation.builder()
                 .reservedGame(targetMatch)
                 .reservedMember(member)
