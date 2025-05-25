@@ -1,9 +1,11 @@
 package com.tickeTeam.domain.seat.service;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -14,14 +16,19 @@ import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.game.entity.Game;
 import com.tickeTeam.domain.game.repository.GameRepository;
+import com.tickeTeam.domain.member.entity.Member;
+import com.tickeTeam.domain.member.repository.MemberRepository;
+import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
 import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.entity.Seat;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +37,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.redisson.api.RBucket;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @ExtendWith(MockitoExtension.class)
 class SeatServiceTest {
@@ -49,17 +66,24 @@ class SeatServiceTest {
     @InjectMocks
     private SeatService seatService;
 
-    private Long testGameId;
+    private final Long testGameId = 1L;
+    private final String testEmail = "test@example.com";
+    private final SeatSelectRequest mockSeatSelectRequest = SeatSelectRequest.of(new ArrayList<>(List.of(1L, 2L, 3L)));
     private List<Seat> mockSeats;
-
+    private final Member mockMember = Member.builder().email(testEmail).build();;
     @BeforeEach
     void setup(){
-        testGameId = 1L;
         mockGame = Game.builder()
                 .id(1L)
                 .stadium(Stadium.of("잠실 야구장"))
                 .build();
 
+    }
+
+    @AfterEach
+    void tearDown() {
+        // 각 테스트 후 SecurityContextHolder를 정리하여 테스트 간 독립성 보장
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -68,7 +92,6 @@ class SeatServiceTest {
         try(MockedStatic<GameSeatsResponse> mockedResponse = mockStatic(GameSeatsResponse.class)) {
             // 준비
             when(gameRepository.findById(testGameId)).thenReturn(Optional.of(mockGame));
-
             mockSeats = List.of(mock(Seat.class), mock(Seat.class));
             when(seatRepository.findAllByGame(mockGame)).thenReturn(mockSeats);
 
@@ -142,5 +165,4 @@ class SeatServiceTest {
         verify(gameRepository).findById(testGameId);
         verifyNoInteractions(seatRepository);
     }
-
 }

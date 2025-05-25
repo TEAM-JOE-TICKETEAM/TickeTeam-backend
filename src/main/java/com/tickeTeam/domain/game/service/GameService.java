@@ -1,7 +1,6 @@
 package com.tickeTeam.domain.game.service;
 
 import com.tickeTeam.common.exception.ErrorCode;
-import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
@@ -12,27 +11,23 @@ import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.infrastructure.security.jwt.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class GameService {
 
-    private static final String ACCESS_HEADER = "Authorization";
-    private static final String BEARER = "Bearer ";
-
     private final GameRepository gameRepository;
     private final MemberRepository memberRepository;
-    private final JwtUtil jwtUtil;
 
     // 7일 이내 경기 조회(조회 당일 기준)
-    public ResultResponse getGamesInNextSevenDays(HttpServletRequest request) {
-        Member findMember = getMemberByRequest(request);
+    public ResultResponse getGamesInNextSevenDays() {
+        Member findMember = getMemberByAuthentication();
         Team findTeam = findMember.getFavoriteTeam();
 
         LocalDate today = LocalDate.now();
@@ -45,19 +40,16 @@ public class GameService {
         return ResultResponse.of(ResultCode.GET_WEEKLY_GAME_SUCCESS, weeklyGamesResponse);
     }
 
-    private Member getMemberByRequest(HttpServletRequest request) {
-        // jwt 토큰으로부터 추출한 이메일로 사용자 조회
-        String memberEmail = jwtUtil.getEmail(extractAccessToken(request));
+    private Member getMemberByAuthentication() {
+        // Authentication 에서 추출한 이메일로 사용자 조회
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new NotFoundException(ErrorCode.AUTHENTICATION_NOT_FOUND);
+        }
+        String memberEmail = authentication.getName();
         return memberRepository.findByEmail(memberEmail).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
-    }
-
-    private String extractAccessToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader(ACCESS_HEADER))
-                .filter(refreshToken -> refreshToken.startsWith(BEARER))
-                .map(refreshToken -> refreshToken.replace(BEARER, ""))
-                .orElseThrow(() -> new BusinessException(ErrorCode.TOKEN_ACCESS_NOT_EXIST));
     }
 
 }

@@ -17,7 +17,7 @@ public class GameController {
     private final GameService gameService;
 
     @GetMapping("/upcoming")
-    public ResponseEntity<ResultResponse> getGamesInNextSevenDays(HttpServletRequest request){
-        return ResponseEntity.ok(gameService.getGamesInNextSevenDays(request));
+    public ResponseEntity<ResultResponse> getGamesInNextSevenDays(){
+        return ResponseEntity.ok(gameService.getGamesInNextSevenDays());
     }
 }

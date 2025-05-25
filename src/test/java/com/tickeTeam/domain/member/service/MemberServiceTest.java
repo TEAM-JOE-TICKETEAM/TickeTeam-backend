@@ -14,6 +14,7 @@ import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.domain.member.dto.request.MemberUpdateRequest;
+import com.tickeTeam.domain.member.dto.request.MemberVerificationRequest;
 import com.tickeTeam.domain.member.dto.response.MyPageResponse;
 import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.entity.MemberRole;
@@ -22,7 +23,9 @@ import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.infrastructure.security.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.Optional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,10 +34,17 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @ExtendWith(MockitoExtension.class) // JUnit5에서 Mockito를 사용하기 위한 확장
-class MemberServiceImplTest {
+class MemberServiceTest {
 
     @Mock
     private MemberRepository memberRepository;
@@ -43,38 +53,37 @@ class MemberServiceImplTest {
     private TeamRepository teamRepository;
 
     @Mock
-    private JwtUtil jwtUtil;
-
-    @Mock
-    private HttpServletRequest request;
-
-    @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Mock
     private Member mockExistingMember;
 
     @InjectMocks
-    private MemberServiceImpl memberService;
-
-    private static final String ACCESS_HEADER = "Authorization";
-    private static final String BEARER_PREFIX = "Bearer ";
+    private MemberService memberService;
 
     private Member testMember;
     private MemberSignUpRequest testSignUpRequest;
     private MemberUpdateRequest testUpdateRequest;
-    private Team testTeam;
-    private Team updateTeam;
-    private String testToken;
-    private String testEmail;
-    private String hashedPassword;
+    private MemberVerificationRequest testVerificationRequest;
+    private final Team testTeam = Team.of("두산 베어스");
+    private final Team updateTeam = Team.of("LG 트윈스");
+    private final String testEmail = "test@example.com";
+
+    // SecurityContextHolder 설정을 위한 헬퍼 메소드
+    private void setupMockAuthentication(String email, String role) {
+        UserDetails userDetails = User.builder()
+                .username(email)
+                .password("password")
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(role)))
+                .build();
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
+    }
+
     @BeforeEach
     void setUp() {
-        testEmail = "test@example.com";
-        testToken = "valid.jwt.token";
-        testTeam = Team.of("두산 베어스");
-        updateTeam = Team.of("LG 트윈스");
-        hashedPassword = "hashedPassword";
         testMember = Member.builder()
                 .id(1L)
                 .name("tester")
@@ -96,6 +105,14 @@ class MemberServiceImplTest {
                 .name("updateTester")
                 .favoriteTeam("LG 트윈스")
                 .build();
+
+        testVerificationRequest = MemberVerificationRequest.of("test@example.com", "tester");
+    }
+
+    @AfterEach
+    void tearDown() {
+        // 각 테스트 후 SecurityContextHolder를 정리하여 테스트 간 독립성 보장
+        SecurityContextHolder.clearContext();
     }
 
     @Test
@@ -104,6 +121,8 @@ class MemberServiceImplTest {
         // 준비
         when(memberRepository.existsByEmail(testSignUpRequest.getEmail())).thenReturn(false);
         when(teamRepository.findByTeamName(testSignUpRequest.getFavoriteTeam())).thenReturn(Optional.of(testTeam));
+
+        String hashedPassword = "hashedPassword";
         when(bCryptPasswordEncoder.encode(testSignUpRequest.getPassword())).thenReturn(hashedPassword);
         when(memberRepository.save(any(Member.class))).thenReturn(testMember);
 
@@ -162,13 +181,13 @@ class MemberServiceImplTest {
     @Test
     @DisplayName("마이 페이지 조회 성공 - 회원 정보 DTO 반환")
     void 마이_페이지_성공(){
+        setupMockAuthentication(testEmail, "USER");
+
         // 준비
-        when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-        when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
 
         // 실행
-        MyPageResponse myPageResponse = (MyPageResponse) memberService.myPage(request).getData();
+        MyPageResponse myPageResponse = (MyPageResponse) memberService.myPage().getData();
 
         // 검증
         assertThat(myPageResponse).isNotNull();
@@ -177,64 +196,50 @@ class MemberServiceImplTest {
         assertThat(myPageResponse.getFavoriteTeam()).isEqualTo(testMember.getFavoriteTeam().getTeamName());
 
         // Mock 객체들의 메서드가 올바르게 호출되었는지 검증
-        verify(request).getHeader(ACCESS_HEADER);
-        verify(jwtUtil).getEmail(testToken);
         verify(memberRepository).findByEmail(testEmail);
-    }
-
-    @Test
-    @DisplayName("마이 페이지 조회 실패 - 토큰 없음")
-    void 마이_페이지_실패_토큰_없음(){
-        // 준비
-        when(request.getHeader(ACCESS_HEADER)).thenReturn(null);
-
-        // 실행 & 검증
-        assertThatThrownBy(() -> memberService.myPage(request))
-                .isInstanceOf(BusinessException.class)
-                        .hasMessage(ErrorCode.TOKEN_ACCESS_NOT_EXIST.getMessage());
-
-        verify(request).getHeader(ACCESS_HEADER);
-        verifyNoInteractions(jwtUtil); // jwtUtil 호출 안되어야 함
-        verifyNoInteractions(memberRepository); // memberRepository 호출 안되어야 함
     }
 
     @Test
     @DisplayName("마이 페이지 조회 실패 - 추출한 이메일로 사용자 찾을 수 없음")
     void 마이_페이지_사용자_조회_실패(){
+        setupMockAuthentication(testEmail, "USER");
+
         // 준비
-        when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-        when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
-        assertThatThrownBy(() -> memberService.myPage(request))
+        assertThatThrownBy(() -> memberService.myPage())
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
-
-        verify(request).getHeader(ACCESS_HEADER);
-        verify(jwtUtil).getEmail(testToken);
         verify(memberRepository).findByEmail(testEmail);
+    }
+
+    @Test
+    @DisplayName("마이 페이지 조회 실패 - 인증 정보 없음")
+    void 마이_페이지_조회_실패_인증_정보_없음() {
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.myPage())
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.AUTHENTICATION_NOT_FOUND.getMessage());
     }
 
     @Test
     @DisplayName("사용자 정보 수정 성공")
     void 사용자_정보_수정_성공(){
+        setupMockAuthentication(testEmail, "USER");
+
         // 준비
-        when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-        when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockExistingMember));
         when(teamRepository.findByTeamName(testUpdateRequest.getFavoriteTeam())).thenReturn(Optional.of(updateTeam));
 
         // 실행
-        ResultResponse resultResponse = memberService.updateMember(testUpdateRequest, request);
+        ResultResponse resultResponse = memberService.updateMember(testUpdateRequest);
 
         // 검증
         assertThat(resultResponse).isNotNull();
         assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.MEMBER_UPDATE_SUCCESS.getMessage());
 
-        verify(request).getHeader(ACCESS_HEADER);
-        verify(jwtUtil).getEmail(testToken);
         verify(memberRepository).findByEmail(testEmail);
         verify(teamRepository).findByTeamName(testUpdateRequest.getFavoriteTeam());
         verify(mockExistingMember).update(testUpdateRequest, updateTeam);
@@ -243,17 +248,15 @@ class MemberServiceImplTest {
     @Test
     @DisplayName("사용자 정보 수정 실패 - 팀 찾을 수 없음")
     void 사용자_수정_실패_팀_못찾음() {
-        when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-        when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
+        setupMockAuthentication(testEmail, "USER");
+
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockExistingMember));
         when(teamRepository.findByTeamName(testUpdateRequest.getFavoriteTeam())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest, request))
+        assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.TEAM_NOT_FOUND.getMessage());
 
-        verify(request).getHeader(ACCESS_HEADER);
-        verify(jwtUtil).getEmail(testToken);
         verify(memberRepository).findByEmail(testEmail);
         verify(teamRepository).findByTeamName(testUpdateRequest.getFavoriteTeam());
     }
@@ -261,19 +264,92 @@ class MemberServiceImplTest {
     @Test
     @DisplayName("사용자 정보 수정 실패 - 추출한 이메일로 사용자 찾을 수 없음")
     void 사용자_정보_수정_실패_사용자_못찾음(){
+        setupMockAuthentication(testEmail, "USER");
+
         // 준비
-        when(request.getHeader(ACCESS_HEADER)).thenReturn(BEARER_PREFIX + testToken);
-        when(jwtUtil.getEmail(testToken)).thenReturn(testEmail);
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
-        assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest, request))
+        assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
-        verify(request).getHeader(ACCESS_HEADER);
-        verify(jwtUtil).getEmail(testToken);
         verify(memberRepository).findByEmail(testEmail);
         verifyNoInteractions(teamRepository);
+    }
+
+    @Test
+    @DisplayName("사용자 정보 수정 실패 - 인증 정보 없음")
+    void 사용자_정보_수정_실패_인증_정보_없음() {
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.updateMember(testUpdateRequest))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.AUTHENTICATION_NOT_FOUND.getMessage());
+    }
+
+    @Test
+    @DisplayName("예약자 확인 성공")
+    void 예약자_확인_성공() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
+
+        // 실행
+        ResultResponse resultResponse = memberService.memberVerification(testVerificationRequest);
+
+        // 검증
+        assertThat(resultResponse).isNotNull();
+        assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.MEMBER_VERIFICATION_SUCCESS.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
+    }
+
+    @Test
+    @DisplayName("예약자 확인 실패 - 비교 결과 이름이 다름")
+    void 예약자_확인_실패_이름() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
+
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.memberVerification(MemberVerificationRequest.of(testEmail, "other name")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.MEMBER_VERIFICATION_FAIL.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
+    }
+
+    @Test
+    @DisplayName("예약자 확인 실패 - 비교 결과 이메일이 다름")
+    void 예약자_확인_실패_이메일() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
+
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.memberVerification(MemberVerificationRequest.of("wrong@example.com", "tester")))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.MEMBER_VERIFICATION_FAIL.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
+    }
+
+    @Test
+    @DisplayName("예약자 확인 실패 - 비교 결과 이름이 다름")
+    void 예약자_확인_실패_사용자_못찾음() {
+        setupMockAuthentication(testEmail, "USER");
+
+        // 준비
+        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
+
+        // 실행 & 검증
+        assertThatThrownBy(() -> memberService.memberVerification(MemberVerificationRequest.of(testEmail, "tester")))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
+
+        verify(memberRepository).findByEmail(testEmail);
     }
 }
