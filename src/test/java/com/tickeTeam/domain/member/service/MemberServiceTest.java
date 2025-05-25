@@ -3,6 +3,7 @@ package com.tickeTeam.domain.member.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,8 @@ import com.tickeTeam.domain.member.entity.MemberRole;
 import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.domain.member.repository.TeamRepository;
+import com.tickeTeam.domain.ticket.dto.response.ReservationListResponse;
+import com.tickeTeam.domain.ticket.service.TicketService;
 import com.tickeTeam.infrastructure.security.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
@@ -57,6 +60,9 @@ class MemberServiceTest {
 
     @Mock
     private Member mockExistingMember;
+
+    @Mock
+    private TicketService ticketService;
 
     @InjectMocks
     private MemberService memberService;
@@ -185,6 +191,7 @@ class MemberServiceTest {
 
         // 준비
         when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(testMember));
+        when(ticketService.getReservationInfoList(testMember)).thenReturn(mock(ReservationListResponse.class));
 
         // 실행
         MyPageResponse myPageResponse = (MyPageResponse) memberService.myPage().getData();
@@ -197,6 +204,7 @@ class MemberServiceTest {
 
         // Mock 객체들의 메서드가 올바르게 호출되었는지 검증
         verify(memberRepository).findByEmail(testEmail);
+        verify(ticketService).getReservationInfoList(testMember);
     }
 
     @Test

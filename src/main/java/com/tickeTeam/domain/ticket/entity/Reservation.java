@@ -1,5 +1,6 @@
 package com.tickeTeam.domain.ticket.entity;
 
+import com.tickeTeam.common.entity.BaseEntity;
 import com.tickeTeam.domain.game.entity.Game;
 import com.tickeTeam.domain.member.entity.Member;
 import jakarta.persistence.CascadeType;
@@ -29,8 +30,8 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 @Getter
 @SQLRestriction("is_deleted = false")
-@SQLDelete(sql = "UPDATE member SET is_deleted = true WHERE member_id = ?")
-public class Reservation {
+@SQLDelete(sql = "UPDATE reservation SET is_deleted = true WHERE reservation_id = ?")
+public class Reservation extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

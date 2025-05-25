@@ -1,6 +1,7 @@
 package com.tickeTeam.domain.member.dto.response;
 
 import com.tickeTeam.domain.member.entity.Member;
+import com.tickeTeam.domain.ticket.dto.response.ReservationListResponse;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,11 +16,14 @@ public class MyPageResponse {
 
     private final String favoriteTeam;
 
-    public static MyPageResponse from(Member member) {
+    private final ReservationListResponse reservationList;
+
+    public static MyPageResponse from(Member member, ReservationListResponse reservationList) {
         return new MyPageResponse(
                 member.getName(),
                 member.getEmail(),
-                member.getFavoriteTeam().getTeamName()
+                member.getFavoriteTeam().getTeamName(),
+                reservationList
         );
     }
 }
