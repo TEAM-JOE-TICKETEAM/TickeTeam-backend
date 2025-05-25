@@ -33,18 +33,18 @@ public class ReservationInfoResponse {
 
     private List<TicketInfoResponse> ticketInfos;
 
-    public static ReservationInfoResponse from(Reservation reservation, Member member, Game game){
+    public static ReservationInfoResponse from(Reservation reservation){
         List<TicketInfoResponse> ticketInfoResponses = reservation.getTickets().stream()
                 .map(TicketInfoResponse::from)
                 .toList();
         return ReservationInfoResponse.builder()
                 .reservationCode(reservation.getReservationCode())
-                .memberName(member.getName())
-                .stadium(game.getStadium().getStadiumName())
-                .homeTeam(game.getHomeTeam().getTeamName())
-                .awayTeam(game.getAwayTeam().getTeamName())
-                .matchDay(game.getMatchDay())
-                .matchTime(game.getMatchTime())
+                .memberName(reservation.getReservedMember().getName())
+                .stadium(reservation.getReservedGame().getStadium().getStadiumName())
+                .homeTeam(reservation.getReservedGame().getHomeTeam().getTeamName())
+                .awayTeam(reservation.getReservedGame().getAwayTeam().getTeamName())
+                .matchDay(reservation.getReservedGame().getMatchDay())
+                .matchTime(reservation.getReservedGame().getMatchTime())
                 .ticketInfos(ticketInfoResponses)
                 .build();
     }

@@ -16,6 +16,7 @@ import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
 import com.tickeTeam.domain.ticket.dto.request.TicketIssueRequest;
 import com.tickeTeam.domain.ticket.dto.request.TicketingCancelRequest;
 import com.tickeTeam.domain.ticket.dto.response.ReservationInfoResponse;
+import com.tickeTeam.domain.ticket.dto.response.ReservationListResponse;
 import com.tickeTeam.domain.ticket.entity.Reservation;
 import com.tickeTeam.domain.ticket.entity.Ticket;
 import com.tickeTeam.domain.ticket.repository.ReservationRepository;
@@ -77,7 +78,7 @@ public class TicketService {
             redissonClient.getBucket(holdKey).delete();
         }
 
-        return ResultResponse.of(ResultCode.TICKET_ISSUE_SUCCESS, ReservationInfoResponse.from(newReservation, member, targetMatch));
+        return ResultResponse.of(ResultCode.TICKET_ISSUE_SUCCESS, ReservationInfoResponse.from(newReservation));
     }
 
     // 티켓팅 시퀀스 도중 취소 요청 처리 메서드
@@ -100,6 +101,13 @@ public class TicketService {
 
         return ResultResponse.of(ResultCode.TICKETING_CANCEL_SUCCESS);
     }
+
+    // 예약 정보 조회 메서드
+    public ReservationListResponse getReservationInfoList(Member member){
+        List<Reservation> reservations = reservationRepository.findAllByReservedMember(member);
+        return ReservationListResponse.from(reservations);
+    }
+
 
     private void checkIsHold(List<Seat> seats, Member member) {
         for (Seat seat : seats) {

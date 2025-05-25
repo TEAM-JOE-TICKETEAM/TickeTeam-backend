@@ -13,7 +13,8 @@ import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
-import com.tickeTeam.infrastructure.security.jwt.JwtUtil;
+import com.tickeTeam.domain.ticket.dto.response.ReservationListResponse;
+import com.tickeTeam.domain.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +28,7 @@ public class MemberService{
 
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
+    private final TicketService ticketService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     // 회원 가입
@@ -56,7 +58,10 @@ public class MemberService{
     // 회원 정보 조회
     public ResultResponse myPage() {
         Member findMember = getMemberByAuthentication();
-        return ResultResponse.of(ResultCode.MY_PAGE, MyPageResponse.from(findMember));
+
+        ReservationListResponse reservationInfoList = ticketService.getReservationInfoList(findMember);
+
+        return ResultResponse.of(ResultCode.MY_PAGE, MyPageResponse.from(findMember, reservationInfoList));
     }
 
     // 회원 정보 수정
