@@ -60,7 +60,8 @@ public class Reservation extends BaseEntity {
         this.tickets.add(ticket);
     }
 
-    public void cancelTicket(Ticket ticket){
+    public int cancelTicket(Ticket ticket){
         this.tickets.remove(ticket);
+        return this.tickets.size();
     }
 }

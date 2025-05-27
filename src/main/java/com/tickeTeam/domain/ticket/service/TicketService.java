@@ -125,6 +125,21 @@ public class TicketService {
         return ResultResponse.of(ResultCode.RESERVATION_CANCEL_SUCCESS);
     }
 
+    // 특정 티켓 취소 메서드
+    public ResultResponse cancelTicket(Long ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(
+                () -> new NotFoundException(ErrorCode.TICKET_NOT_FOUND));
+
+        int remainTicketCount = ticket.getReservation().cancelTicket(ticket);
+        ticket.getSeat().seatRelease();
+        ticketRepository.delete(ticket);
+
+        // 만약 Reservation 에 남은 티켓이 없다면 Reservation 도 제거
+        if (remainTicketCount == 0) reservationRepository.delete(ticket.getReservation());
+
+        return ResultResponse.of(ResultCode.TICKET_CANCEL_SUCCESS);
+    }
+
     private void checkIsHold(List<Seat> seats, Member member) {
         for (Seat seat : seats) {
             String holdKey = "seat:" + seat.getId() + ":heldBy";
