@@ -21,6 +21,7 @@ import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
 import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.entity.Seat;
+import com.tickeTeam.domain.seat.entity.SeatStatus;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import java.util.ArrayList;
@@ -93,7 +94,7 @@ class SeatServiceTest {
             // 준비
             when(gameRepository.findById(testGameId)).thenReturn(Optional.of(mockGame));
             mockSeats = List.of(mock(Seat.class), mock(Seat.class));
-            when(seatRepository.findAllByGame(mockGame)).thenReturn(mockSeats);
+            when(seatRepository.findAllByGameAndSeatStatus(mockGame, SeatStatus.AVAILABLE)).thenReturn(mockSeats);
 
             mockedResponse.when(() -> GameSeatsResponse.of(
                     eq(mockSeats), eq(testGameId), eq("잠실 야구장")
@@ -109,7 +110,7 @@ class SeatServiceTest {
             assertThat(resultResponse.getData()).isEqualTo(mockGameSeatsResponse);
 
             verify(gameRepository).findById(testGameId);
-            verify(seatRepository).findAllByGame(mockGame);
+            verify(seatRepository).findAllByGameAndSeatStatus(mockGame, SeatStatus.AVAILABLE);
             mockedResponse.verify(() -> GameSeatsResponse.of(
                     mockSeats, testGameId, "잠실 야구장"
             ));
@@ -124,7 +125,7 @@ class SeatServiceTest {
             when(gameRepository.findById(testGameId)).thenReturn(Optional.of(mockGame));
 
             mockSeats = Collections.emptyList();
-            when(seatRepository.findAllByGame(mockGame)).thenReturn(mockSeats);
+            when(seatRepository.findAllByGameAndSeatStatus(mockGame, SeatStatus.AVAILABLE)).thenReturn(mockSeats);
 
             mockedResponse.when(() -> GameSeatsResponse.of(
                     eq(mockSeats), eq(testGameId), eq("잠실 야구장")
@@ -144,7 +145,7 @@ class SeatServiceTest {
             assertThat(gameSeatsResponse.getSeats()).isEqualTo(Collections.emptyList());
 
             verify(gameRepository).findById(testGameId);
-            verify(seatRepository).findAllByGame(mockGame);
+            verify(seatRepository).findAllByGameAndSeatStatus(mockGame, SeatStatus.AVAILABLE);
             mockedResponse.verify(() -> GameSeatsResponse.of(
                     mockSeats, testGameId, "잠실 야구장"
             ));

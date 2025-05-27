@@ -33,11 +33,11 @@ public class TicketInfoResponse {
                 .ticketId(ticket.getId())
                 .ticketPrice(ticket.getTicketPrice())
                 .ticketIssuedAt(ticket.getIssuedAt())
-                .seatType(ticket.getSeatInfo().getSeatType().name())
-                .seatSection(ticket.getSeatInfo().getSeatSection())
-                .seatBlock(ticket.getSeatInfo().getSeatBlock())
-                .seatRow(ticket.getSeatInfo().getSeatRow())
-                .seatNum(ticket.getSeatInfo().getSeatNum())
+                .seatType(ticket.getSeat().getSeatTemplate().getSeatInfo().getSeatType().name())
+                .seatSection(ticket.getSeat().getSeatTemplate().getSeatInfo().getSeatSection())
+                .seatBlock(ticket.getSeat().getSeatTemplate().getSeatInfo().getSeatBlock())
+                .seatRow(ticket.getSeat().getSeatTemplate().getSeatInfo().getSeatRow())
+                .seatNum(ticket.getSeat().getSeatTemplate().getSeatInfo().getSeatNum())
                 .build();
     }
 }

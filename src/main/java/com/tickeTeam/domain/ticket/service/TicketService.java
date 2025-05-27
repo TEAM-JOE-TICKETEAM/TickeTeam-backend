@@ -10,6 +10,7 @@ import com.tickeTeam.domain.game.repository.GameRepository;
 import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.domain.seat.entity.Seat;
+import com.tickeTeam.domain.seat.entity.SeatInfo;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.sectionPrice.entity.SectionPrice;
 import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
@@ -23,9 +24,12 @@ import com.tickeTeam.domain.ticket.repository.ReservationRepository;
 import com.tickeTeam.domain.ticket.repository.TicketRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.weaver.ast.Not;
 import org.redisson.api.RedissonClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -62,7 +66,7 @@ public class TicketService {
         for (Seat seat : seats) {
 
             Ticket newTicket = Ticket.builder()
-                    .seatInfo(seat.getSeatTemplate().getSeatInfo())
+                    .seat(seat)
                     .reservation(newReservation)
                     .ticketPrice(sectionPrice.getSectionPrice(targetMatch.getMatchDay()))
                     .issuedAt(LocalDateTime.now())
@@ -108,6 +112,33 @@ public class TicketService {
         return ReservationListResponse.from(reservations);
     }
 
+    // 예매 취소 메서드
+    @Transactional
+    public ResultResponse cancelReservation(String reservationCode) {
+        Reservation reservation = reservationRepository.findByReservationCode(reservationCode).orElseThrow(
+                () -> new NotFoundException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        List<Ticket> tickets = reservation.getTickets();
+        tickets.forEach(ticket -> ticket.getSeat().seatRelease());
+
+        reservationRepository.delete(reservation);
+        return ResultResponse.of(ResultCode.RESERVATION_CANCEL_SUCCESS);
+    }
+
+    // 특정 티켓 취소 메서드
+    public ResultResponse cancelTicket(Long ticketId) {
+        Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(
+                () -> new NotFoundException(ErrorCode.TICKET_NOT_FOUND));
+
+        int remainTicketCount = ticket.getReservation().cancelTicket(ticket);
+        ticket.getSeat().seatRelease();
+        ticketRepository.delete(ticket);
+
+        // 만약 Reservation 에 남은 티켓이 없다면 Reservation 도 제거
+        if (remainTicketCount == 0) reservationRepository.delete(ticket.getReservation());
+
+        return ResultResponse.of(ResultCode.TICKET_CANCEL_SUCCESS);
+    }
 
     private void checkIsHold(List<Seat> seats, Member member) {
         for (Seat seat : seats) {
@@ -147,6 +178,7 @@ public class TicketService {
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
     }
+
 
 
 }

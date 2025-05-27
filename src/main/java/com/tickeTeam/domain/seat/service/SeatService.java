@@ -12,6 +12,7 @@ import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
 import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.entity.Seat;
+import com.tickeTeam.domain.seat.entity.SeatStatus;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +45,7 @@ public class SeatService {
     public ResultResponse getGameSeats(Long gameId) {
         Game findGame = gameRepository.findById(gameId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
-        List<Seat> seats = seatRepository.findAllByGame(findGame);
+        List<Seat> seats = seatRepository.findAllByGameAndSeatStatus(findGame, SeatStatus.AVAILABLE);
         return ResultResponse.of(ResultCode.GET_GAME_SEAT_SUCCESS,
                 GameSeatsResponse.of(seats, gameId, findGame.getStadium().getStadiumName()));
     }
