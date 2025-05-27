@@ -1,6 +1,7 @@
 package com.tickeTeam.domain.ticket.entity;
 
 import com.tickeTeam.common.entity.BaseEntity;
+import com.tickeTeam.domain.seat.entity.Seat;
 import com.tickeTeam.domain.seat.entity.SeatInfo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -26,7 +27,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Builder
 @Getter
 @SQLRestriction("is_deleted = false")
-@SQLDelete(sql = "UPDATE member SET is_deleted = true WHERE member_id = ?")
+@SQLDelete(sql = "UPDATE ticket SET is_deleted = true WHERE ticket_id = ?")
 public class Ticket extends BaseEntity {
 
     @Id
@@ -38,8 +39,9 @@ public class Ticket extends BaseEntity {
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
-    @Embedded
-    private SeatInfo seatInfo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seat_id")
+    private Seat seat;
 
     @Column(name = "ticket_price")
     private int ticketPrice;

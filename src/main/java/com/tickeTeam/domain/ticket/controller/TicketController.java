@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,5 +39,14 @@ public class TicketController {
     @PostMapping("/cancel")
     public ResponseEntity<ResultResponse> cancelTicketing(@RequestBody TicketingCancelRequest ticketingCancelRequest){
         return ResponseEntity.ok(ticketService.cancelTicketing(ticketingCancelRequest));
+    }
+
+    @Operation(
+            summary = "예매를 취소합니다",
+            description = "예매를 취소합니다. 이 경우 발급된 모든 티켓이 취소됩니다."
+    )
+    @DeleteMapping("/{reservationCode}")
+    public ResponseEntity<ResultResponse> cancelReservation(@PathVariable("reservationCode") String reservationCode){
+        return ResponseEntity.ok(ticketService.cancelReservation(reservationCode));
     }
 }

@@ -45,6 +45,7 @@ public enum ErrorCode {
     // Ticket
     SEAT_HELD_BY_OTHER(400, "T001", "해당 좌석은 다른 사용자에게 선점된 상태입니다."),
     SEAT_NOT_HELD(400, "T002", "해당 좌석은 선점되어있지 않습니다."),
+    RESERVATION_NOT_FOUND(404, "T003", "해당 예매 기록을 찾을 수 없습니다."),
     ;
 
     private final int status;
