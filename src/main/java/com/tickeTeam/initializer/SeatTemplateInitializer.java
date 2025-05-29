@@ -1,26 +1,36 @@
 package com.tickeTeam.initializer;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+import com.tickeTeam.common.exception.ErrorCode;
+import com.tickeTeam.common.exception.customException.BusinessException;
+import com.tickeTeam.common.exception.customException.NotFoundException;
+import com.tickeTeam.domain.game.entity.Game;
+import com.tickeTeam.domain.member.entity.Team;
 import com.tickeTeam.domain.seat.entity.SeatInfo;
 import com.tickeTeam.domain.seat.entity.SeatTemplate;
 import com.tickeTeam.domain.seat.entity.SeatType;
 import com.tickeTeam.domain.seat.repository.SeatTemplateRepository;
+import com.tickeTeam.domain.stadium.entity.Stadium;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
-
-/**
- * 구장별 규격화된 좌석 정보(잠실 야구장 기준)
- * 23000석 전부 삽입하기에 양이 너무 많기에 범위를 좁혀 삽입
- * 지정석 1블럭 좌석 수 - 14 * 17(238)
- * 비지정석 1블럭 좌석 수 - 15 * 15(225)
- * 지정석 2블럭(476석) / 비지정석 2블럭(450석)
- * 총 926석
- */
 
 @Order(1)
 @Component
@@ -28,75 +38,47 @@ import org.springframework.stereotype.Component;
 @Profile("!test")
 public class SeatTemplateInitializer implements ApplicationRunner {
 
-    // 좌석 관련 상수
-    private static final String ASSIGNED_SECTION = "1루 레드석";
-    private static final String NON_ASSIGNED_SECTION = "3루 외야 일반석";
-    private static final String ASSIGNED_BLOCK1 = "329";
-    private static final String ASSIGNED_BLOCK2 = "330";
-    private static final String NON_ASSIGNED_BLOCK1 = "116";
-    private static final String NON_ASSIGNED_BLOCK2 = "117";
-    private static final int ASSIGNED_ROWS = 34;
-    private static final int ASSIGNED_COLS = 14;
-    private static final int NON_ASSIGNED_ROWS = 30;
-    private static final int NON_ASSIGNED_COLS = 15;
     private final SeatTemplateRepository seatTemplateRepository;
-
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        // 좌석이 없으면 삽입
-        if (seatTemplateRepository.count() == 0) {
-            List<SeatTemplate> seatTemplates = new ArrayList<>();
 
-            // 지정석 생성
-            seatTemplates.addAll(generateAssignedSeats());
+        List<SeatTemplate> seatTemplates = new ArrayList<>();
 
-            // 비지정석 생성
-            seatTemplates.addAll(generateNonAssignedSeats());
+        // CSV 파일 경로
+        Path filePath = Paths.get("src/main/resources/data/seat_templates.csv");
+        try(CSVReader csvReader = new CSVReader(new FileReader(filePath.toFile()))){
 
-            // 데이터 저장
-            seatTemplateRepository.saveAll(seatTemplates);
-        }
-    }
+            List<String[]> rows = csvReader.readAll();
 
-    // 지정석 좌석 생성 메서드
-    private List<SeatTemplate> generateAssignedSeats() {
-        List<SeatTemplate> seats = new ArrayList<>();
+            // 각 행을 읽어서 Game 엔티티로 변환
+            for (String[] row : rows) {
+                SeatType seatType = SeatType.valueOf(row[0].toUpperCase());
+                String seatSection = row[1];
+                String seatBlock = row[2];
+                Integer seatRowInt = (row[3] != null && !row[3].isEmpty()) ? Integer.parseInt(row[3]) : null;
+                Integer seatNumInt = (row[4] != null && !row[4].isEmpty()) ? Integer.parseInt(row[4]) : null;
 
-        for (int row = 0; row < ASSIGNED_ROWS; row++) {
-            // 블럭 구분
-            String block = row < 17 ? ASSIGNED_BLOCK1 : ASSIGNED_BLOCK2;
-            for (int col = 0; col < ASSIGNED_COLS; col++) {
-                seats.add(buildSeatTemplate(SeatType.ASSIGNED, ASSIGNED_SECTION, block, row, col));
+                SeatTemplate newSeatTemplate = buildSeatTemplate(seatType, seatSection, seatBlock, seatRowInt, seatNumInt);
+
+                seatTemplates.add(newSeatTemplate);
             }
+        } catch (IOException e) {
+            throw new BusinessException(ErrorCode.GAME_DATA_INSERT_ERROR);
         }
-        return seats;
+
+        seatTemplateRepository.saveAll(seatTemplates);
     }
 
-    // 비지정석 좌석 생성 메서드
-    private List<SeatTemplate> generateNonAssignedSeats() {
-        List<SeatTemplate> seats = new ArrayList<>();
-
-        for (int row = 0; row < NON_ASSIGNED_ROWS; row++) {
-            // 블럭 구분
-            String block = row < 15 ? NON_ASSIGNED_BLOCK1 : NON_ASSIGNED_BLOCK2;
-            for (int col = 0; col < NON_ASSIGNED_COLS; col++) {
-                // 비지정석은 row와 seatNum이 의미 없으므로 null로 설정
-                seats.add(buildSeatTemplate(SeatType.NON_ASSIGNED, NON_ASSIGNED_SECTION, block, null, null));
-            }
-        }
-        return seats;
-    }
-
-    // SeatTemplate 객체 빌드하는 메서드
+    // 기존 buildSeatTemplate 메소드는 그대로 사용하거나, CSV 구조에 맞게 파라미터 조정 가능
     private SeatTemplate buildSeatTemplate(SeatType seatType, String section, String block, Integer row, Integer num) {
         return SeatTemplate.builder()
                 .seatInfo(SeatInfo.builder()
                         .seatType(seatType)
                         .seatSection(section)
                         .seatBlock(block)
-                        .seatRow(row != null ? String.valueOf(row) : null)  // null 처리
-                        .seatNum(num)  // num은 null일 수 있도록 Integer로 처리
+                        .seatRow(row != null ? String.valueOf(row) : null)
+                        .seatNum(num)
                         .build())
                 .build();
     }

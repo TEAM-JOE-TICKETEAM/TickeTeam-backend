@@ -46,9 +46,6 @@ public class GameInitializer implements ApplicationRunner {
 
         try(CSVReader csvReader = new CSVReader(new FileReader(filePath.toFile()))){
 
-            // 첫 번째 줄은 헤더이므로 읽지 않음
-            csvReader.readNext();
-
             List<String[]> rows = csvReader.readAll();
 
             // 팀 및 경기장 데이터를 미리 조회해두기 (성능 최적화)
