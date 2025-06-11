@@ -4,7 +4,10 @@ import com.tickeTeam.domain.sectionPrice.entity.SectionPrice;
 import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import com.tickeTeam.domain.stadium.repository.StadiumRepository;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -22,16 +25,26 @@ public class SectionPriceInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        Stadium stadiumJamsil = stadiumRepository.findByStadiumName("잠실 야구장")
-                .orElseThrow();
+        Map<String, Integer> sections = new HashMap<>();
+        sections.put("1루 블루존", 12000);
+        sections.put("3루 레드존", 12000);
+        sections.put("중앙 네이비석", 12000);
+        sections.put("프리미엄 테이블석", 40000);
+        sections.put("스카이박스", 120000);
+        sections.put("1루 외야자유석", 9000);
+        sections.put("3루 외야자유석", 9000);
+        sections.put("그린존", 12000);
 
-        if (sectionPriceRepository.count() == 0) {
-            List<SectionPrice> sectionPrices = List.of(
-                    SectionPrice.of(stadiumJamsil, "1루 레드석", 12000),
-                    SectionPrice.of(stadiumJamsil, "3루 외야 일반석", 7000)
-            );
+        List<Stadium> stadiums = stadiumRepository.findAll();
+        List<SectionPrice> sectionPrices = new ArrayList<>();
 
-            sectionPriceRepository.saveAll(sectionPrices);
+
+        for (Stadium stadium : stadiums) {
+            for (String section : sections.keySet()) {
+                sectionPrices.add(SectionPrice.of(stadium, section, sections.get(section)));
+            }
         }
+
+        sectionPriceRepository.saveAll(sectionPrices);
     }
 }

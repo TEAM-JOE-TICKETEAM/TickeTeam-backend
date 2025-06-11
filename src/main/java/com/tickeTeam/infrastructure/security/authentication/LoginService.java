@@ -30,7 +30,8 @@ public class LoginService {
 
         // 멤버의 email을 아이디로 멤버 검사
         String email = loginRequest.getEmail();
-        Member member = memberRepository.findByEmail(email).orElseThrow(
+
+        Member member = memberRepository.findByEmailWithTeam(email).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
 

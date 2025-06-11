@@ -33,14 +33,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class SeatService {
 
     private static final String SEAT_PREFIX = "seat";
-    public static final int LOCK_TIME_OUT = 1;
+    public static final int LOCK_TIME_OUT = 5;
     public static final int LOCK_WAIT_TIME = 1;
 
     private final SeatRepository seatRepository;
     private final RedissonClient redissonClient;
     private final GameRepository gameRepository;
     private final MemberRepository memberRepository;
-
+    private final SeatTransactionService seatTransactionService;
     // 좌석 정보 조회
     public ResultResponse getGameSeats(Long gameId) {
         Game findGame = gameRepository.findById(gameId)
@@ -52,7 +52,6 @@ public class SeatService {
 
     // 좌석 선택(다중 선택 가능, 선택 시 해당 좌석에 선점 적용(7분))
     // 한 번에 인당 최대 4석, 같은 구역 내에서만 다중 선택 가능
-    @Transactional
     public ResultResponse selectSeats(SeatSelectRequest selectRequest) {
 
         List<Long> selectedSeatIds = selectRequest.getSeatIds();
@@ -61,21 +60,23 @@ public class SeatService {
         }
         Collections.sort(selectedSeatIds);  // 교착상태 방지를 위해 오름차순 정렬 적용
 
-        List<Seat> selectedSeats = seatRepository.findAllByIdIn(selectedSeatIds); // 좌석 정보 조회
+//        List<Seat> selectedSeats = seatRepository.findAllByIdIn(selectedSeatIds); // 좌석 정보 조회
 
         // 가져온 좌석들의 상태(SeatStatus) 선점 상태로 변경하며 분산락 획득
         List<RLock> acquiredLocks = new ArrayList<>();
         String memberEmail = getMemberByAuthentication().getEmail();
         try {
-            for (Seat seat : selectedSeats) {
-                String key = keyResolver(seat.getId());
+            for (Long seatId : selectedSeatIds) {
+                String key = keyResolver(seatId);
                 RLock lock = redissonClient.getLock(key + ":lock");
 
+                // 락 획득 시도 (5초 대기, 1분 후 자동 해제)
                 if (!lock.tryLock(LOCK_WAIT_TIME, LOCK_TIME_OUT, TimeUnit.MINUTES)) {
                     throw new BusinessException(ErrorCode.CANNOT_GET_LOCK);
                 }
 
                 acquiredLocks.add(lock); // 획득한 락 저장
+
                 // 이미 선점된 좌석인지 확인
                 String redisKey = key + ":heldBy";
                 String existingUserId = (String) redissonClient.getBucket(redisKey).get();
@@ -87,7 +88,7 @@ public class SeatService {
                 redissonClient.getBucket(redisKey).set(memberEmail, 7, TimeUnit.MINUTES);
             }
 
-            holdSeats(selectedSeats);
+            seatTransactionService.holdSeatsInNewTransaction(selectedSeatIds);
 
         } catch (InterruptedException e) {
             // InterruptedException 발생 시 스레드의 인터럽트 상태 -> false

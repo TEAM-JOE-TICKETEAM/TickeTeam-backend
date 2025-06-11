@@ -47,7 +47,7 @@ public class GameService {
             throw new NotFoundException(ErrorCode.AUTHENTICATION_NOT_FOUND);
         }
         String memberEmail = authentication.getName();
-        return memberRepository.findByEmail(memberEmail).orElseThrow(
+        return memberRepository.findByEmailWithTeam(memberEmail).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
     }

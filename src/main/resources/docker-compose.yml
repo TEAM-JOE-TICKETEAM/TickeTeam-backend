@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  influxdb:
+    image: influxdb:1.8 # k6와 호환성이 좋은 1.8 버전 사용
+    container_name: influxdb_k6_compose
+    ports:
+      - "8086:8086" # 로컬에서 InfluxDB 접근 포트
+    volumes:
+      - influxdb_data:/var/lib/influxdb # 데이터 영속성을 위한 볼륨
+    #environment:
+    # k6 데이터베이스 자동 생성을 위한 환경 변수 (선택 사항, 수동 생성 권장)
+    # - INFLUXDB_DB=k6
+    # - INFLUXDB_HTTP_AUTH_ENABLED=false # 간단한 테스트를 위해 인증 비활성화
+    networks:
+      - monitoring_network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus_k6_compose
+    ports:
+      - "9090:9090" # 로컬에서 Prometheus UI 접근 포트
+    volumes:
+      # docker-compose.yml 파일과 prometheus.yml 파일이 같은 디렉터리에 있으므로,
+      # 호스트 경로는 './prometheus.yml'로 하고,
+      # 컨테이너 내부의 Prometheus 설정 파일 경로인 '/etc/prometheus/prometheus.yml'로 마운트합니다.
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # 수정된 부분
+      - prometheus_data:/prometheus # 데이터 영속성을 위한 볼륨
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - monitoring_network
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana_k6_compose
+    ports:
+      - "3000:3000" # 로컬에서 Grafana UI 접근 포트
+    volumes:
+      - grafana_data:/var/lib/grafana # 데이터 영속성을 위한 볼륨 (대시보드, 데이터소스 설정 등 저장)
+      # 필요하다면 Grafana 설정 파일이나 프로비저닝 파일 마운트
+      # - ./config/grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource # 필요시 플러그인 자동 설치
+    depends_on: # 다른 서비스가 준비된 후 Grafana가 시작되도록 (강제는 아님)
+      - influxdb
+      - prometheus
+    networks:
+      - monitoring_network
+
+volumes: # 데이터 영속성을 위한 명명된 볼륨 정의
+  influxdb_data:
+  prometheus_data:
+  grafana_data:
+  # mysql_data:
+
+networks: # 컨테이너 간 통신을 위한 사용자 정의 네트워크 정의
+  monitoring_network:
+    driver: bridge
+  # app_network:
+  #   driver: bridge

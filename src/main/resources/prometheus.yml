@@ -1,0 +1,19 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"] # Prometheus 자기 자신
+
+  - job_name: "spring-actuator"
+    metrics_path: "/actuator/prometheus"
+    scrape_interval: 5s
+    static_configs:
+      # Docker Compose 네트워크 내에서는 서비스 이름으로 접근 가능
+      # Spring Boot 앱도 Docker Compose로 함께 실행한다면 서비스 이름 사용
+      # 그렇지 않고 로컬에서 직접 실행 중인 Spring Boot 앱을 타겟팅하려면
+      # 'host.docker.internal:8080' (Docker Desktop) 또는 호스트 머신 IP 사용
+      - targets: ["host.docker.internal:8080"] # Docker Desktop에서 호스트 머신 접근 시
+      # - targets: ["172.30.1.11:8080"] # 예시: 특정 호스트 IP (이전 대화에서 찾은 IP)

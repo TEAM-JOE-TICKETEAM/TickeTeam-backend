@@ -10,7 +10,6 @@ import com.tickeTeam.domain.game.repository.GameRepository;
 import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.member.repository.MemberRepository;
 import com.tickeTeam.domain.seat.entity.Seat;
-import com.tickeTeam.domain.seat.entity.SeatInfo;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.sectionPrice.entity.SectionPrice;
 import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
@@ -24,12 +23,9 @@ import com.tickeTeam.domain.ticket.repository.ReservationRepository;
 import com.tickeTeam.domain.ticket.repository.TicketRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.aspectj.weaver.ast.Not;
 import org.redisson.api.RedissonClient;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -58,10 +54,10 @@ public class TicketService {
         Game targetMatch = gameRepository.findById(ticketIssueRequest.getGameId())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
 
-        Reservation newReservation = creatAndSaveReservation(targetMatch, member);
+        Reservation newReservation = createAndSaveReservation(targetMatch, member);
 
         SectionPrice sectionPrice = sectionPriceRepository
-                .findBySeatSection(seats.get(0).getSeatTemplate().getSeatInfo().getSeatSection());
+                .findBySeatSectionAndSectionStadium(seats.get(0).getSeatTemplate().getSeatInfo().getSeatSection(), targetMatch.getStadium());
 
         for (Seat seat : seats) {
 
@@ -154,7 +150,7 @@ public class TicketService {
         }
     }
 
-    private Reservation creatAndSaveReservation(Game targetMatch, Member member) {
+    private Reservation createAndSaveReservation(Game targetMatch, Member member) {
         Reservation newReservation = Reservation.builder()
                 .reservedGame(targetMatch)
                 .reservedMember(member)

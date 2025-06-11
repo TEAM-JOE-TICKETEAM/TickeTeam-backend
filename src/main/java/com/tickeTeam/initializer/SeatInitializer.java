@@ -33,40 +33,33 @@ import org.springframework.stereotype.Component;
 @Profile("!test")
 public class SeatInitializer implements ApplicationRunner {
 
-    public static final int DAYS_FROM_TODAY = 1;
     public static final int DAYS_TO_END = 7;
-    public static final String JAMSIL = "잠실 야구장";
 
     private final SeatRepository seatRepository;
     private final GameRepository gameRepository;
-    private final StadiumRepository stadiumRepository;
     private final SeatTemplateRepository seatTemplateRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        Stadium jamsil = stadiumRepository.findByStadiumName(JAMSIL).orElseThrow(
-                () -> new NotFoundException(ErrorCode.STADIUM_NOT_FOUND)
-        );
-
         LocalDate today = LocalDate.now();
         LocalDate end = today.plusDays(DAYS_TO_END);   // 7일 뒤
 
-        List<Game> games = gameRepository.findByMatchDayBetweenAndStadium_Id(today, end, jamsil.getId());
+        List<Game> games = gameRepository.findByMatchDayBetween(today, end);
         List<SeatTemplate> seatTemplates = seatTemplateRepository.findAll();
 
-        List<Seat> seats = generateSeatsForGames(games, seatTemplates, jamsil);
+        List<Seat> seats = generateSeatsForGames(games, seatTemplates);
         seatRepository.saveAll(seats);
     }
 
-    private List<Seat> generateSeatsForGames(List<Game> games, List<SeatTemplate> templates, Stadium stadium) {
+    private List<Seat> generateSeatsForGames(List<Game> games, List<SeatTemplate> templates) {
         List<Seat> seats = new ArrayList<>();
         for (Game game : games) {
             for (SeatTemplate template : templates) {
                 seats.add(
                         Seat.builder()
                                 .game(game)
-                                .seatStadium(stadium)
+                                .seatStadium(game.getStadium())
                                 .seatTemplate(template)
                                 .seatStatus(SeatStatus.AVAILABLE)
                                 .build()
