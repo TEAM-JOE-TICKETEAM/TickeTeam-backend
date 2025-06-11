@@ -53,48 +53,6 @@ services:
     networks:
       - monitoring_network
 
-  # --- 선택 사항: Spring Boot 애플리케이션도 Docker로 함께 실행하는 경우 ---
-  # app:
-  #   build: . # 프로젝트 루트에 Dockerfile이 있다고 가정
-  #   container_name: spring_boot_app_compose
-  #   ports:
-  #     - "8080:8080" # 애플리케이션 포트
-  #   environment:
-  #     # Spring Boot 애플리케이션이 사용하는 DB, Redis 등의 주소를 Docker 네트워크 내 서비스 이름으로 설정
-  #     - SPRING_DATASOURCE_URL=jdbc:mysql://mysql_db:3306/ticketeam
-  #     - SPRING_REDIS_HOST=redis_cache
-  #   depends_on:
-  #     - mysql_db # 예시: DB가 먼저 실행되도록
-  #     - redis_cache # 예시: Redis가 먼저 실행되도록
-  #   networks:
-  #     - monitoring_network
-  #     - app_network # 애플리케이션 전용 네트워크 (선택 사항)
-
-  # --- 선택 사항: MySQL DB도 Docker로 함께 실행하는 경우 ---
-  # mysql_db:
-  #   image: mysql:8.0
-  #   container_name: mysql_db_compose
-  #   ports:
-  #     - "3306:3306"
-  #   environment:
-  #     - MYSQL_ROOT_PASSWORD=your_root_password
-  #     - MYSQL_DATABASE=ticketeam
-  #     - MYSQL_USER=your_user
-  #     - MYSQL_PASSWORD=your_password
-  #   volumes:
-  #     - mysql_data:/var/lib/mysql
-  #   networks:
-  #     - app_network
-
-  # --- 선택 사항: Redis도 Docker로 함께 실행하는 경우 ---
-  # redis_cache:
-  #   image: redis:latest
-  #   container_name: redis_cache_compose
-  #   ports:
-  #     - "6379:6379"
-  #   networks:
-  #     - app_network
-
 volumes: # 데이터 영속성을 위한 명명된 볼륨 정의
   influxdb_data:
   prometheus_data:
