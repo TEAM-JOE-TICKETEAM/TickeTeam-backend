@@ -21,7 +21,7 @@ export const options = {
 const BASE_URL = "http://localhost:8080/api/v1";
 const initializedUsers = [];
 const USER_COUNT_FROM_INITIALIZER = 1000; // 초기 데이터로 넣어주는 사용자 수만큼으로 설정
-const USER_PASSWORD = "test";
+const USER_PASSWORD = __ENV.USER_PASSWORD;
 
 for (let i = 0; i < USER_COUNT_FROM_INITIALIZER; i++) {
   initializedUsers.push({
