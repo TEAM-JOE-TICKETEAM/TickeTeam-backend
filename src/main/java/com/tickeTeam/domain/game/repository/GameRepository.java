@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface GameRepository extends JpaRepository<Game, Long> {
 
-    List<Game> findByMatchDayBetweenAndStadium_Id(LocalDate startDate, LocalDate endDate, Long stadium_id);
+    List<Game> findByMatchDayBetween(LocalDate startDate, LocalDate endDate);
 
     /**
      * 특정 기간 내에 주어진 팀이 홈팀이거나 어웨이팀으로 참여하는 모든 경기를 조회
