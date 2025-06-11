@@ -89,7 +89,7 @@ class LoginServiceTest {
     @DisplayName("로그인 성공 - 토큰을 헤더에 담아 반환합니다.")
     void 로그인_성공() {
         // 준비
-        when(memberRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(loginMember));
+        when(memberRepository.findByEmailWithTeam(loginRequest.getEmail())).thenReturn(Optional.of(loginMember));
         when(bCryptPasswordEncoder.matches(loginRequest.getPassword(), loginMember.getPassword())).thenReturn(true);
         when(jwtUtil.createJwt(TokenTypes.ACCESS.getName(), loginMember.getEmail(), loginMember.getRole(), loginMember.getId()))
                 .thenReturn(accessToken);
@@ -110,7 +110,7 @@ class LoginServiceTest {
         assertThat(loginResponse.getFavoriteTeam()).isEqualTo(loginMember.getFavoriteTeam().getTeamName());
 
         // 의존성 메서드 호출 검증
-        verify(memberRepository).findByEmail(loginRequest.getEmail());
+        verify(memberRepository).findByEmailWithTeam(loginRequest.getEmail());
         verify(bCryptPasswordEncoder).matches(loginRequest.getPassword(), loginMember.getPassword());
         verify(jwtUtil).createJwt(TokenTypes.ACCESS.getName(), loginMember.getEmail(), loginMember.getRole(), loginMember.getId());
         verify(jwtUtil).createJwt(TokenTypes.REFRESH.getName(), loginMember.getEmail(), loginMember.getRole(), loginMember.getId());
@@ -134,7 +134,7 @@ class LoginServiceTest {
     @DisplayName("로그인 실패 - 입력한 이메일에 해당하는 사용자를 찾지 못했습니다.")
     void 로그인_실패_사용자_못찾음() {
         // 준비
-        when(memberRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.empty());
+        when(memberRepository.findByEmailWithTeam(loginRequest.getEmail())).thenReturn(Optional.empty());
 
         // 실행 & 검증
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
@@ -143,9 +143,10 @@ class LoginServiceTest {
         assertThat(exception.getErrorCode()).isEqualTo(ErrorCode.MEMBER_NOT_FOUND);
 
         // 의존성 메서드들 검증
-        verify(memberRepository).findByEmail(loginRequest.getEmail());
+        verify(memberRepository).findByEmailWithTeam(loginRequest.getEmail());
 
         // 실행되면 안되는 메서드들 검증
+        verifyNoInteractions(bCryptPasswordEncoder);
         verifyNoInteractions(bCryptPasswordEncoder);
         verifyNoInteractions(jwtUtil);
         verify(response, never()).addHeader(anyString(), anyString());
@@ -155,7 +156,7 @@ class LoginServiceTest {
     @DisplayName("로그인 실패 - 입력한 비밀번호가 맞지 않습니다.")
     void 로그인_실패_비밀번호_틀림() {
         // 준비
-        when(memberRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(loginMember));
+        when(memberRepository.findByEmailWithTeam(loginRequest.getEmail())).thenReturn(Optional.of(loginMember));
         when(bCryptPasswordEncoder.matches(loginRequest.getPassword(), loginMember.getPassword())).thenReturn(false);
 
         // 실행
@@ -167,7 +168,7 @@ class LoginServiceTest {
         assertThat(loginResult.getCode()).isEqualTo(ResultCode.LOGIN_FAIL.getCode());
 
         // 의존성 메서드 검증
-        verify(memberRepository).findByEmail(loginRequest.getEmail());
+        verify(memberRepository).findByEmailWithTeam(loginRequest.getEmail());
         verify(bCryptPasswordEncoder).matches(loginRequest.getPassword(), loginMember.getPassword());
 
         // 실행되면 안되는 메서드들 검증

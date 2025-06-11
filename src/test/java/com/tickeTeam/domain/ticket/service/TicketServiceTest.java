@@ -21,6 +21,8 @@ import com.tickeTeam.domain.seat.entity.SeatType;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import com.tickeTeam.domain.seat.repository.SeatTemplateRepository;
 import com.tickeTeam.domain.seat.service.SeatService;
+import com.tickeTeam.domain.sectionPrice.entity.SectionPrice;
+import com.tickeTeam.domain.sectionPrice.repository.SectionPriceRepository;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import com.tickeTeam.domain.stadium.repository.StadiumRepository;
 import com.tickeTeam.domain.ticket.dto.request.TicketIssueRequest;
@@ -60,6 +62,9 @@ class TicketServiceTest {
 
     @Autowired
     ReservationRepository reservationRepository;
+
+    @Autowired
+    private SectionPriceRepository sectionPriceRepository;
 
     @Autowired
     private SeatService seatService;
@@ -111,7 +116,7 @@ class TicketServiceTest {
                 .homeTeam(exHomeTeam)
                 .awayTeam(exAwayTeam)
                 .stadium(exStadium)
-                .matchDay(LocalDate.now().plusDays(1)) // 오늘 날짜 [2025-05-18] 기준 다음 날
+                .matchDay(LocalDate.now().plusDays(1)) // 오늘 날짜 기준 다음 날
                 .matchTime(LocalTime.of(18, 30))
                 .build();
         gameRepository.save(exGame);
@@ -126,6 +131,13 @@ class TicketServiceTest {
                         .build())
                 .build();
         seatTemplateRepository.save(exTemplate);
+
+        final SectionPrice exSectionPrice = SectionPrice.of(
+                exStadium,
+                "1루 레드석",
+                12000
+        );
+        sectionPriceRepository.save(exSectionPrice);
 
         final Seat exSeatA = Seat.builder()
                 .seatStadium(exStadium)
@@ -159,6 +171,8 @@ class TicketServiceTest {
         // Redis 데이터 정리
         redissonClient.getBucket(seatService.keyResolver(seatA.getId())+":heldBy").delete();
         redissonClient.getBucket(seatService.keyResolver(seatB.getId())+":heldBy").delete();
+
+        sectionPriceRepository.deleteAll();
 
         SecurityContextHolder.clearContext();
     }

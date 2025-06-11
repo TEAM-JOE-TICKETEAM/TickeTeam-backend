@@ -99,7 +99,7 @@ class GameServiceTest {
             // 준비
             mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
 
-            when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
+            when(memberRepository.findByEmailWithTeam(testEmail)).thenReturn(Optional.of(mockMember));
             when(mockMember.getFavoriteTeam()).thenReturn(mockTeam);
             mockGameList = List.of(mock(Game.class), mock(Game.class));
             when(gameRepository.findGamesByTeamAndDateRange(fixedCurrentDate, endDate, mockTeam))
@@ -118,7 +118,7 @@ class GameServiceTest {
             assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getMessage());
             assertThat(resultResponse.getData()).isEqualTo(mockWeeklyGamesResponse);
 
-            verify(memberRepository).findByEmail(testEmail);
+            verify(memberRepository).findByEmailWithTeam(testEmail);
             verify(mockMember).getFavoriteTeam();
             verify(gameRepository).findGamesByTeamAndDateRange(fixedCurrentDate, endDate, mockTeam);
             mockedResponse.verify(() -> WeeklyGamesResponse.of(
@@ -138,7 +138,7 @@ class GameServiceTest {
             // 준비
             mockedDate.when(LocalDate::now).thenReturn(fixedCurrentDate);
 
-            when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.of(mockMember));
+            when(memberRepository.findByEmailWithTeam(testEmail)).thenReturn(Optional.of(mockMember));
             when(mockMember.getFavoriteTeam()).thenReturn(mockTeam);
 
             mockGameList = Collections.emptyList();
@@ -163,7 +163,7 @@ class GameServiceTest {
             WeeklyGamesResponse resultResponseData = (WeeklyGamesResponse) resultResponse.getData();
             assertThat(resultResponseData.getGames()).isEqualTo(Collections.emptyList()); // 빈 리스트를 반환하는지 검증
 
-            verify(memberRepository).findByEmail(testEmail);
+            verify(memberRepository).findByEmailWithTeam(testEmail);
             verify(mockMember).getFavoriteTeam();
             verify(gameRepository).findGamesByTeamAndDateRange(fixedCurrentDate, endDate, mockTeam);
             mockedResponse.verify(() -> WeeklyGamesResponse.of(
@@ -178,14 +178,14 @@ class GameServiceTest {
         setupMockAuthentication(testEmail, "USER");
 
         // 준비
-        when(memberRepository.findByEmail(testEmail)).thenReturn(Optional.empty());
+        when(memberRepository.findByEmailWithTeam(testEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
         assertThatThrownBy(() -> gameService.getGamesInNextSevenDays())
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
-        verify(memberRepository).findByEmail(testEmail);
+        verify(memberRepository).findByEmailWithTeam(testEmail);
         verifyNoInteractions(gameRepository); // 사용자 조회 실패 시 게임 조회 로직은 실행 안됨
     }
 
