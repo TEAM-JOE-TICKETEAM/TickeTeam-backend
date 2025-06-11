@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
@@ -28,6 +29,10 @@ public class UserInitializer implements ApplicationRunner {
     private final TeamRepository teamRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Value("${user.password}")
+    private String testPassword;
+
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
@@ -37,7 +42,7 @@ public class UserInitializer implements ApplicationRunner {
             throw new NotFoundException(ErrorCode.TEAM_NOT_FOUND);
         }
 
-        String encodedPassword = bCryptPasswordEncoder.encode("test");
+        String encodedPassword = bCryptPasswordEncoder.encode(testPassword);
 
         List<Member> createdMembers = new ArrayList<>();
         for (int i = 0; i < USER_NUM; i++) {
@@ -51,9 +56,7 @@ public class UserInitializer implements ApplicationRunner {
             createdMembers.add(createdMember);
         }
 
-        System.out.println("=== start member query ===");
         memberRepository.saveAll(createdMembers);
-        System.out.println("=== finish member query ===");
 
     }
 }
