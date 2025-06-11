@@ -54,7 +54,7 @@ public class TicketService {
         Game targetMatch = gameRepository.findById(ticketIssueRequest.getGameId())
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
 
-        Reservation newReservation = creatAndSaveReservation(targetMatch, member);
+        Reservation newReservation = createAndSaveReservation(targetMatch, member);
 
         SectionPrice sectionPrice = sectionPriceRepository
                 .findBySeatSectionAndSectionStadium(seats.get(0).getSeatTemplate().getSeatInfo().getSeatSection(), targetMatch.getStadium());
@@ -150,7 +150,7 @@ public class TicketService {
         }
     }
 
-    private Reservation creatAndSaveReservation(Game targetMatch, Member member) {
+    private Reservation createAndSaveReservation(Game targetMatch, Member member) {
         Reservation newReservation = Reservation.builder()
                 .reservedGame(targetMatch)
                 .reservedMember(member)
