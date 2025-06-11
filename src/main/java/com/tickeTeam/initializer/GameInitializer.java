@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -43,6 +44,8 @@ public class GameInitializer implements ApplicationRunner {
 
         // CSV 파일 경로
         Path filePath = Paths.get("src/main/resources/data/matches.csv");
+
+        List<Game> games = new ArrayList<>();
 
         try(CSVReader csvReader = new CSVReader(new FileReader(filePath.toFile()))){
 
@@ -78,14 +81,14 @@ public class GameInitializer implements ApplicationRunner {
                             .matchTime(LocalTime.parse(matchTime))
                             .build();
 
-                    // DB에 저장
-                    gameRepository.save(game);
+                    // 리스트에 추가
+                    games.add(game);
                 }
             }
         } catch (IOException e) {
             throw new BusinessException(ErrorCode.GAME_DATA_INSERT_ERROR);
         }
 
-
+        gameRepository.saveAll(games);
     }
 }

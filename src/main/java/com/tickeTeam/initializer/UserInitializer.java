@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserInitializer implements ApplicationRunner {
 
-    private static final int USER_NUM = 10;
+    private static final int USER_NUM = 1000;
 
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
@@ -31,22 +31,29 @@ public class UserInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        Team favoriteTeam = teamRepository.findByTeamName("두산 베어스").orElseThrow(
-                () -> new NotFoundException(ErrorCode.TEAM_NOT_FOUND)
-        );
+        List<Team> favoriteTeams = teamRepository.findAll();
+
+        if (favoriteTeams.isEmpty()) {
+            throw new NotFoundException(ErrorCode.TEAM_NOT_FOUND);
+        }
+
+        String encodedPassword = bCryptPasswordEncoder.encode("test");
 
         List<Member> createdMembers = new ArrayList<>();
         for (int i = 0; i < USER_NUM; i++) {
             Member createdMember = Member.builder()
                     .name("tester" + i)
                     .email("test" + i + "@example.com")
-                    .password(bCryptPasswordEncoder.encode("test"))
-                    .favoriteTeam(favoriteTeam)
+                    .password(encodedPassword)
+                    .favoriteTeam(favoriteTeams.get(i % favoriteTeams.size()))
                     .role(MemberRole.USER)
                     .build();
             createdMembers.add(createdMember);
         }
 
+        System.out.println("=== start member query ===");
         memberRepository.saveAll(createdMembers);
+        System.out.println("=== finish member query ===");
+
     }
 }
