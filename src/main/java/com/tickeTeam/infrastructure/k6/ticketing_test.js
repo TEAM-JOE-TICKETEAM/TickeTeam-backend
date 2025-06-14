@@ -8,11 +8,11 @@ export const options = {
   // 시간 및 VU 설정
   // Lamp-up 방식으로 서서히 5000명까지 올렸다 내린다
   stages: [
-    { duration: "1m", target: 200 },
-    { duration: "3m", target: 500 },
-    { duration: "3m", target: 950 },
-    { duration: "2m", target: 500 },
-    { duration: "1m", target: 200 },
+    { duration: "1m", target: 1000 },
+    { duration: "3m", target: 2500 },
+    { duration: "3m", target: 5000 },
+    { duration: "2m", target: 2500 },
+    { duration: "1m", target: 1000 },
   ],
   insecureSkipTLSVerify: true, // 로컬에서 테스트 중이기에 TLS 인증서 검증 건너뜀
 };
@@ -20,7 +20,7 @@ export const options = {
 // 전역 변수 설정
 const BASE_URL = "http://localhost:8080/api/v1";
 const initializedUsers = [];
-const USER_COUNT_FROM_INITIALIZER = 1000; // 초기 데이터로 넣어주는 사용자 수만큼으로 설정
+const USER_COUNT_FROM_INITIALIZER = 5000; // 초기 데이터로 넣어주는 사용자 수만큼으로 설정
 const USER_PASSWORD = __ENV.USER_PASSWORD;
 
 for (let i = 0; i < USER_COUNT_FROM_INITIALIZER; i++) {

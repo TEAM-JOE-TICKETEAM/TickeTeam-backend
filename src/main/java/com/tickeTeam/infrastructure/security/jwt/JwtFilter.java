@@ -13,10 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -52,6 +54,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         setAuthentication(accessToken);
+
         filterChain.doFilter(request, response);
     }
 
@@ -60,6 +63,15 @@ public class JwtFilter extends OncePerRequestFilter {
         String email = jwtUtil.getEmail(token);
         Authentication authentication = jwtUtil.getAuthentication(email);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        Authentication storedAuth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (storedAuth != null && storedAuth.isAuthenticated()) {
+            log.info("✅ [인증 성공] SecurityContextHolder에 사용자 '{}'의 인증 정보가 성공적으로 저장되었습니다. Principal: {}",
+                    storedAuth.getName(), storedAuth.getPrincipal());
+        } else {
+            log.error("❌ [인증 실패] SecurityContextHolder에 인증 정보 저장을 시도했으나, 실패했거나 즉시 사라졌습니다.");
+        }
     }
 
     // Access-Token 만료시 401 반환

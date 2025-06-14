@@ -23,7 +23,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserInitializer implements ApplicationRunner {
 
-    private static final int USER_NUM = 1000;
+    private static final int USER_NUM = 5000;
 
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;

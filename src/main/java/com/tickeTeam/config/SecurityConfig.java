@@ -23,6 +23,7 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JwtUtil jwtUtil;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public AuthenticationManager authenticationManager() throws Exception {
@@ -58,9 +59,10 @@ public class SecurityConfig {
                                 "/actuator/**",
                                 "/actuator"
                                 ).permitAll()
+                        .requestMatchers("/api/v1/queue/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(new JwtFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
                 ;
 
         return http.build();

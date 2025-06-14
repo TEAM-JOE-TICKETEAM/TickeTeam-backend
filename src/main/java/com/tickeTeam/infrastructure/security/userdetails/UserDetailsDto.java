@@ -27,6 +27,10 @@ public class UserDetailsDto implements UserDetails {
         return member.getPassword();
     }
 
+    public Long getIdentity(){
+        return member.getId();
+    }
+
     @Override
     public String getUsername() {
         return member.getEmail();
