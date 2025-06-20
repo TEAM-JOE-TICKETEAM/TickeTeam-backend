@@ -14,6 +14,7 @@ public enum ErrorCode {
     INPUT_INVALID_VALUE(409, "G002", "잘못된 입력"),
     ACCESS_INVALID_VALUE(400, "G003", "잘못된 접근"),
     AUTHENTICATION_NOT_FOUND(404, "G004", "로그인 사용자 정보 찾을 수 없음"),
+    LOCK_INTERRUPTED_ERROR(500, "G005", "락 대기 중 인터럽트 발생 오류"),
 
     // Game
     GAME_DATA_INSERT_ERROR(500,"GA001", "game 데이터 삽입 중 오류 발생"),
@@ -26,6 +27,7 @@ public enum ErrorCode {
     STADIUM_NOT_FOUND(404,"ST001","경기장 찾을 수 없음"),
 
     // Seat
+    SEAT_TEMPLATE_INSERT_ERROR(500, "ST001", "SeatTemplate 데이터 삽입 중 오류 발생"),
     SEAT_ALREADY_HELD(400, "S001", "이미 예약되어있는 좌석입니다."),
     SEAT_CANNOT_BE_HELD(400, "S002","해당 좌석을 선점할 수 없습니다."),
     SEAT_LIMIT_OVER(400, "S002","인당 좌석은 최대 4석까지만 선택 가능합니다."),

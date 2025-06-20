@@ -1,6 +1,7 @@
 package com.tickeTeam.domain.game.dto.response;
 
 import com.tickeTeam.domain.game.entity.Game;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import lombok.AccessLevel;
@@ -9,7 +10,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GameInfoResponse {
+public class GameInfoResponse implements Serializable {
 
     private Long gameId;
 

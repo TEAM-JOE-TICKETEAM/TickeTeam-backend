@@ -22,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -41,17 +43,19 @@ public class SeatService {
     private final GameRepository gameRepository;
     private final MemberRepository memberRepository;
     private final SeatTransactionService seatTransactionService;
+
     // 좌석 정보 조회
-    public ResultResponse getGameSeats(Long gameId) {
-        Game findGame = gameRepository.findById(gameId)
+    @Cacheable(value = "gameSeats", key = "#gameId")
+    public GameSeatsResponse getGameSeats(Long gameId) {
+        Game findGame = gameRepository.findByIdWithStadium(gameId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
-        List<Seat> seats = seatRepository.findAllByGameAndSeatStatus(findGame, SeatStatus.AVAILABLE);
-        return ResultResponse.of(ResultCode.GET_GAME_SEAT_SUCCESS,
-                GameSeatsResponse.of(seats, gameId, findGame.getStadium().getStadiumName()));
+        List<Seat> seats = seatRepository.findAllByGameAndSeatStatusWithTemplate(findGame, SeatStatus.AVAILABLE);
+        return GameSeatsResponse.of(seats, gameId, findGame.getStadium().getStadiumName());
     }
 
     // 좌석 선택(다중 선택 가능, 선택 시 해당 좌석에 선점 적용(7분))
     // 한 번에 인당 최대 4석, 같은 구역 내에서만 다중 선택 가능
+    @CacheEvict(value = "gameSeats", key = "#selectRequest.gameId")
     public ResultResponse selectSeats(SeatSelectRequest selectRequest) {
 
         List<Long> selectedSeatIds = selectRequest.getSeatIds();

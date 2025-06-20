@@ -14,6 +14,7 @@ import com.tickeTeam.infrastructure.security.jwt.JwtUtil;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -26,30 +27,15 @@ public class GameService {
     private final MemberRepository memberRepository;
 
     // 7일 이내 경기 조회(조회 당일 기준)
-    public ResultResponse getGamesInNextSevenDays() {
-        Member findMember = getMemberByAuthentication();
-        Team findTeam = findMember.getFavoriteTeam();
+    @Cacheable(value = "weeklyGames", key = "#member.favoriteTeam.id")
+    public WeeklyGamesResponse getGamesInNextSevenDays(Member member) {
+        Team findTeam = member.getFavoriteTeam();
 
         LocalDate today = LocalDate.now();
         LocalDate endDate = today.plusDays(7);
 
         List<Game> upcomingMatches = gameRepository.findGamesByTeamAndDateRange(today, endDate, findTeam);
 
-        WeeklyGamesResponse weeklyGamesResponse = WeeklyGamesResponse.of(upcomingMatches, today, endDate, findTeam.getTeamName());
-
-        return ResultResponse.of(ResultCode.GET_WEEKLY_GAME_SUCCESS, weeklyGamesResponse);
+        return WeeklyGamesResponse.of(upcomingMatches, today, endDate, findTeam.getTeamName());
     }
-
-    private Member getMemberByAuthentication() {
-        // Authentication 에서 추출한 이메일로 사용자 조회
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new NotFoundException(ErrorCode.AUTHENTICATION_NOT_FOUND);
-        }
-        String memberEmail = authentication.getName();
-        return memberRepository.findByEmailWithTeam(memberEmail).orElseThrow(
-                () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
-        );
-    }
-
 }

@@ -13,6 +13,8 @@ public interface GameRepository extends JpaRepository<Game, Long> {
 
     List<Game> findByMatchDayBetween(LocalDate startDate, LocalDate endDate);
 
+    @Query("SELECT g FROM Game g JOIN FETCH g.stadium WHERE g.id = :id")
+    Optional<Game> findByIdWithStadium(@Param("id") Long id);
     /**
      * 특정 기간 내에 주어진 팀이 홈팀이거나 어웨이팀으로 참여하는 모든 경기를 조회
      * @param startDate 조회 시작일

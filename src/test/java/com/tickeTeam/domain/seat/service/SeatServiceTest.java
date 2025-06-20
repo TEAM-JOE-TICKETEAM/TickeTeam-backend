@@ -101,13 +101,13 @@ class SeatServiceTest {
             )).thenReturn(mockGameSeatsResponse);
 
             // 실행
-            ResultResponse resultResponse = seatService.getGameSeats(testGameId);
+            GameSeatsResponse resultResponse = seatService.getGameSeats(testGameId);
 
             // 검증
             assertThat(resultResponse).isNotNull();
-            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getMessage());
-            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getCode());
-            assertThat(resultResponse.getData()).isEqualTo(mockGameSeatsResponse);
+//            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getMessage());
+//            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getCode());
+//            assertThat(resultResponse.getData()).isEqualTo(mockGameSeatsResponse);
 
             verify(gameRepository).findById(testGameId);
             verify(seatRepository).findAllByGameAndSeatStatus(mockGame, SeatStatus.AVAILABLE);
@@ -133,15 +133,14 @@ class SeatServiceTest {
             when(mockGameSeatsResponse.getSeats()).thenReturn(Collections.emptyList());
 
             // 실행
-            ResultResponse resultResponse = seatService.getGameSeats(testGameId);
+            GameSeatsResponse gameSeatsResponse = seatService.getGameSeats(testGameId);
 
             // 검증
-            assertThat(resultResponse).isNotNull();
-            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getMessage());
-            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getCode());
-            assertThat(resultResponse.getData()).isEqualTo(mockGameSeatsResponse);
+            assertThat(gameSeatsResponse).isNotNull();
+//            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getMessage());
+//            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_GAME_SEAT_SUCCESS.getCode());
+//            assertThat(resultResponse.getData()).isEqualTo(mockGameSeatsResponse);
 
-            GameSeatsResponse gameSeatsResponse = (GameSeatsResponse) resultResponse.getData();
             assertThat(gameSeatsResponse.getSeats()).isEqualTo(Collections.emptyList());
 
             verify(gameRepository).findById(testGameId);

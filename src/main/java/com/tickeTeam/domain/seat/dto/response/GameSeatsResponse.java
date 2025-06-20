@@ -1,6 +1,7 @@
 package com.tickeTeam.domain.seat.dto.response;
 
 import com.tickeTeam.domain.seat.entity.Seat;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -10,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GameSeatsResponse {
+public class GameSeatsResponse implements Serializable {
 
     private Long gameId;
 

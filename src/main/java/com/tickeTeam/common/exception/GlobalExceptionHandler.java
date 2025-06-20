@@ -14,6 +14,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e){
+        log.error("여기 에러 발생!!!");
+        e.printStackTrace();
+        log.error("여기까지 printStackTrace");
         log.error(e.getMessage(), e);
         ErrorResponse response = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);

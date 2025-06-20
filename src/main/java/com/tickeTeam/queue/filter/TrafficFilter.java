@@ -23,7 +23,6 @@ import org.springframework.util.StringUtils;
 
 @Slf4j
 @Component
-@Order(2)
 @RequiredArgsConstructor
 public class TrafficFilter implements Filter {
 
@@ -57,19 +56,20 @@ public class TrafficFilter implements Filter {
         log.info("대기열 시스템 활성화됨. 요청 URL: {}", url);
 
         // 4. 요청에서 사용자 ID 추출
+        String memberId = null;
         String tokenHeader = httpRequest.getHeader("Authorization");
-        if (tokenHeader == null || !tokenHeader.startsWith("Bearer ")) {
-            log.info("request URI : {}", httpRequest.getRequestURI());
-            log.info("Invalid or missing access-token");
-            filterChain.doFilter(httpRequest, httpResponse);
-            return;
+        if (tokenHeader != null && !tokenHeader.startsWith("Bearer ")) {
+            String accessToken = tokenHeader.substring(7);
+            if (!jwtUtil.isExpired(accessToken)){
+                memberId = jwtUtil.getMemberIdentity(accessToken).toString();
+            }
         }
 
-        String accessToken = tokenHeader.substring(7);
-        String memberId = null;
-
-        if (!jwtUtil.isExpired(accessToken)){
-            memberId = jwtUtil.getMemberIdentity(accessToken).toString();
+        // 토큰이 없는 경우 (로그인 등) -> IP 주소를 식별자로 사용
+        if (memberId == null) {
+            memberId = httpRequest.getRemoteAddr();
+            log.info("토큰이 없는 요청. IP 주소({})를 식별자로 사용합니다.", memberId);
+        } else {
             log.info("추출된 사용자 ID = {}", memberId);
         }
 
@@ -85,6 +85,7 @@ public class TrafficFilter implements Filter {
             // 대기해야 하는 사용자 -> 대기열에 추가하고 대기 응답 반환
             log.info("사용자 {}를 대기열에 추가합니다.", memberId);
             Long rank = waitingQueueService.addQueue(memberId).block();
+            long finalRank = (rank != null) ? rank : -1L;
 
             httpResponse.setStatus(HttpStatus.ACCEPTED.value()); // 202 Accepted
             httpResponse.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -93,7 +94,7 @@ public class TrafficFilter implements Filter {
             // 클라이언트에게 대기 순번 정보 반환
             Map<String, Object> responseBody = Map.of(
                     "message", "서비스 접속 대기 중입니다.",
-                    "rank", rank,
+                    "rank", finalRank,
                     "memberId", memberId
             );
 

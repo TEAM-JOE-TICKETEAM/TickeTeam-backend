@@ -4,13 +4,14 @@ import com.tickeTeam.domain.seat.entity.Seat;
 import com.tickeTeam.domain.seat.entity.SeatInfo;
 import com.tickeTeam.domain.seat.entity.SeatStatus;
 import com.tickeTeam.domain.seat.entity.SeatType;
+import java.io.Serializable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SeatInfoResponse {
+public class SeatInfoResponse implements Serializable {
 
     private Long id;
 

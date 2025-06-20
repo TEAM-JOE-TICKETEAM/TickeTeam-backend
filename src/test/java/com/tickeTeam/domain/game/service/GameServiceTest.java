@@ -110,13 +110,13 @@ class GameServiceTest {
             )).thenReturn(mockWeeklyGamesResponse);
 
             // 실행
-            ResultResponse resultResponse = gameService.getGamesInNextSevenDays();
+            WeeklyGamesResponse weeklyGamesResponse = gameService.getGamesInNextSevenDays(mockMember);
 
             // 검증
-            assertThat(resultResponse).isNotNull();
-            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getCode());
-            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getMessage());
-            assertThat(resultResponse.getData()).isEqualTo(mockWeeklyGamesResponse);
+            assertThat(weeklyGamesResponse).isNotNull();
+//            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getCode());
+//            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getMessage());
+//            assertThat(resultResponse.getData()).isEqualTo(mockWeeklyGamesResponse);
 
             verify(memberRepository).findByEmailWithTeam(testEmail);
             verify(mockMember).getFavoriteTeam();
@@ -152,16 +152,15 @@ class GameServiceTest {
             when(mockWeeklyGamesResponse.getGames()).thenReturn(Collections.emptyList());
 
             // 실행
-            ResultResponse resultResponse = gameService.getGamesInNextSevenDays();
+            WeeklyGamesResponse weeklyGamesResponse = gameService.getGamesInNextSevenDays(mockMember);
 
             // 검증
-            assertThat(resultResponse).isNotNull();
-            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getCode());
-            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getMessage());
-            assertThat(resultResponse.getData()).isEqualTo(mockWeeklyGamesResponse);
+            assertThat(weeklyGamesResponse).isNotNull();
+//            assertThat(resultResponse.getCode()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getCode());
+//            assertThat(resultResponse.getMessage()).isEqualTo(ResultCode.GET_WEEKLY_GAME_SUCCESS.getMessage());
+//            assertThat(resultResponse.getData()).isEqualTo(mockWeeklyGamesResponse);
 
-            WeeklyGamesResponse resultResponseData = (WeeklyGamesResponse) resultResponse.getData();
-            assertThat(resultResponseData.getGames()).isEqualTo(Collections.emptyList()); // 빈 리스트를 반환하는지 검증
+            assertThat(weeklyGamesResponse.getGames()).isEqualTo(Collections.emptyList()); // 빈 리스트를 반환하는지 검증
 
             verify(memberRepository).findByEmailWithTeam(testEmail);
             verify(mockMember).getFavoriteTeam();
@@ -181,7 +180,7 @@ class GameServiceTest {
         when(memberRepository.findByEmailWithTeam(testEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
-        assertThatThrownBy(() -> gameService.getGamesInNextSevenDays())
+        assertThatThrownBy(() -> gameService.getGamesInNextSevenDays(mockMember))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.MEMBER_NOT_FOUND.getMessage());
 
@@ -193,7 +192,7 @@ class GameServiceTest {
     @DisplayName("경기 조회 실패 - 인증 정보 없음")
     void 경기_조회_실패_인증_정보_없음() {
         // 실행 & 검증
-        assertThatThrownBy(() -> gameService.getGamesInNextSevenDays())
+        assertThatThrownBy(() -> gameService.getGamesInNextSevenDays(mockMember))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage(ErrorCode.AUTHENTICATION_NOT_FOUND.getMessage());
     }

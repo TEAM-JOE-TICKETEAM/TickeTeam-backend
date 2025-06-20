@@ -87,16 +87,15 @@ public class MemberService{
         return ResultResponse.of(ResultCode.MEMBER_VERIFICATION_SUCCESS);
     }
 
-    private Member getMemberByAuthentication() {
+    public Member getMemberByAuthentication() {
         // Authentication 에서 추출한 이메일로 사용자 조회
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new NotFoundException(ErrorCode.AUTHENTICATION_NOT_FOUND);
         }
         String memberEmail = authentication.getName();
-        return memberRepository.findByEmail(memberEmail).orElseThrow(
+        return memberRepository.findByEmailWithTeam(memberEmail).orElseThrow(
                 () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND)
         );
     }
-
 }

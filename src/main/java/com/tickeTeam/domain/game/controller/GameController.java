@@ -1,7 +1,10 @@
 package com.tickeTeam.domain.game.controller;
 
+import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
+import com.tickeTeam.domain.game.dto.response.WeeklyGamesResponse;
 import com.tickeTeam.domain.game.service.GameService;
+import com.tickeTeam.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GameController {
 
     private final GameService gameService;
+    private final MemberService memberService;
 
     @Operation(
             summary = "일정 조회",
@@ -26,6 +30,8 @@ public class GameController {
     )
     @GetMapping("/upcoming")
     public ResponseEntity<ResultResponse> getGamesInNextSevenDays(){
-        return ResponseEntity.ok(gameService.getGamesInNextSevenDays());
+        WeeklyGamesResponse gamesInNextSevenDays = gameService.getGamesInNextSevenDays(memberService.getMemberByAuthentication());
+        ResultResponse resultResponse = ResultResponse.of(ResultCode.GET_WEEKLY_GAME_SUCCESS, gamesInNextSevenDays);
+        return ResponseEntity.ok(resultResponse);
     }
 }

@@ -1,6 +1,7 @@
 package com.tickeTeam.domain.game.dto.response;
 
 import com.tickeTeam.domain.game.entity.Game;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,7 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class WeeklyGamesResponse {
+public class WeeklyGamesResponse implements Serializable {
 
     private List<GameInfoResponse> games; // 실제 경기 정보 리스트
 
