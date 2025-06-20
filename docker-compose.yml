@@ -1,0 +1,124 @@
+services:
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/ticketeam?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_PROFILES_ACTIVE=prod
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      # Actuator의 Prometheus 엔드포인트를 활성화하는 설정
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=prometheus
+    networks:
+        - ticketeam-net
+
+  # Nginx 로드 밸런서
+  nginx:
+    image: nginx:latest
+    container_name: ticketeam-lb
+    ports:
+      - "80:80" # 외부 애플리케이션 접근 포트
+      - "9090:9090" # Prometheus UI 접근 포트
+      - "3000:3000" # Grafana UI 접근 포트
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - app
+      - prometheus
+      - grafana
+    networks:
+      - ticketeam-net
+
+  # 데이터베이스 (성능 향상을 위해 리소스 할당)
+  db:
+    image: mysql:8.0
+    container_name: ticketeam-db
+    environment:
+      MYSQL_DATABASE: ticketeam
+      MYSQL_ROOT_PASSWORD: hajimin0
+    ports:
+      - "3307:3307"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - ticketeam-net
+
+  # Redis
+  redis:
+    image: redis:latest
+    container_name: ticketeam-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ticketeam-net
+
+  influxdb:
+    image: influxdb:1.8 # k6와 호환성이 좋은 1.8 버전 사용
+    container_name: influxdb_k6_compose
+    ports:
+      - "8086:8086" # 로컬에서 InfluxDB 접근 포트
+    volumes:
+      - influxdb_data:/var/lib/influxdb # 데이터 영속성을 위한 볼륨
+    #environment:
+    # k6 데이터베이스 자동 생성을 위한 환경 변수 (선택 사항, 수동 생성 권장)
+    # - INFLUXDB_DB=k6
+    # - INFLUXDB_HTTP_AUTH_ENABLED=false # 간단한 테스트를 위해 인증 비활성화
+    networks:
+      - ticketeam-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus_k6_compose
+    volumes:
+      # docker-compose.yml 파일과 prometheus.yml 파일이 같은 디렉터리에 있으므로,
+      # 호스트 경로는 './prometheus.yml'로 하고,
+      # 컨테이너 내부의 Prometheus 설정 파일 경로인 '/etc/prometheus/prometheus.yml'로 마운트합니다.
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml # 수정된 부분
+      - prometheus_data:/prometheus # 데이터 영속성을 위한 볼륨
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - ticketeam-net
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana_k6_compose
+    volumes:
+      - grafana_data:/var/lib/grafana # 데이터 영속성을 위한 볼륨 (대시보드, 데이터소스 설정 등 저장)
+      # 필요하다면 Grafana 설정 파일이나 프로비저닝 파일 마운트
+      # - ./config/grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+
+      # - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource # 필요시 플러그인 자동 설치
+    depends_on: # 다른 서비스가 준비된 후 Grafana가 시작되도록 (강제는 아님)
+      - influxdb
+      - prometheus
+    networks:
+      - ticketeam-net
+
+volumes: # 데이터 영속성을 위한 명명된 볼륨 정의
+  mysql_data:
+  influxdb_data:
+  prometheus_data:
+  grafana_data:
+
+networks: # 컨테이너 간 통신을 위한 사용자 정의 네트워크 정의
+  ticketeam-net:
+    driver: bridge
+  # app_network:
+  #   driver: bridge
