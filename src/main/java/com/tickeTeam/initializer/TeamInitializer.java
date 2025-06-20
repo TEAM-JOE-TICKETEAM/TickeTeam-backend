@@ -11,15 +11,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Order(1)
-@Component
 @RequiredArgsConstructor
- public class TeamInitializer implements ApplicationRunner {
+ public class TeamInitializer implements DataInitializer {
 
     private final TeamRepository teamRepository;
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run() {
         if (teamRepository.count() == 0) {
             List<Team> teams = List.of(
                     Team.of("LG 트윈스"),

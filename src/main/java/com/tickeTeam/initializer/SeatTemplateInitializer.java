@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -32,42 +33,43 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-@Order(1)
-@Component
 @RequiredArgsConstructor
-@Profile("!test")
-public class SeatTemplateInitializer implements ApplicationRunner {
+public class SeatTemplateInitializer implements DataInitializer {
 
     private final SeatTemplateRepository seatTemplateRepository;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(){
 
-        List<SeatTemplate> seatTemplates = new ArrayList<>();
+        if (seatTemplateRepository.count() == 0) {
 
-        // CSV 파일 경로
-        Path filePath = Paths.get("src/main/resources/data/seat_templates.csv");
-        try(CSVReader csvReader = new CSVReader(new FileReader(filePath.toFile()))){
+            List<SeatTemplate> seatTemplates = new ArrayList<>();
 
-            List<String[]> rows = csvReader.readAll();
+            // CSV 파일 경로
+            ClassPathResource resource = new ClassPathResource("data/seat_templates.csv");
+            try (InputStream in = resource.getInputStream();
+                 CSVReader csvReader = new CSVReader(new InputStreamReader(in))) {
 
-            // 각 행을 읽어서 Game 엔티티로 변환
-            for (String[] row : rows) {
-                SeatType seatType = SeatType.valueOf(row[0].toUpperCase());
-                String seatSection = row[1];
-                String seatBlock = row[2];
-                Integer seatRowInt = (row[3] != null && !row[3].isEmpty()) ? Integer.parseInt(row[3]) : null;
-                Integer seatNumInt = (row[4] != null && !row[4].isEmpty()) ? Integer.parseInt(row[4]) : null;
+                List<String[]> rows = csvReader.readAll();
 
-                SeatTemplate newSeatTemplate = buildSeatTemplate(seatType, seatSection, seatBlock, seatRowInt, seatNumInt);
+                // 각 행을 읽어서 Game 엔티티로 변환
+                for (String[] row : rows) {
+                    SeatType seatType = SeatType.valueOf(row[0].toUpperCase());
+                    String seatSection = row[1];
+                    String seatBlock = row[2];
+                    Integer seatRowInt = (row[3]!=null && !row[3].isEmpty()) ? Integer.parseInt(row[3]):null;
+                    Integer seatNumInt = (row[4]!=null && !row[4].isEmpty()) ? Integer.parseInt(row[4]):null;
 
-                seatTemplates.add(newSeatTemplate);
+                    SeatTemplate newSeatTemplate = buildSeatTemplate(seatType, seatSection, seatBlock, seatRowInt, seatNumInt);
+
+                    seatTemplates.add(newSeatTemplate);
+                }
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.SEAT_TEMPLATE_INSERT_ERROR);
             }
-        } catch (IOException e) {
-            throw new BusinessException(ErrorCode.GAME_DATA_INSERT_ERROR);
-        }
 
-        seatTemplateRepository.saveAll(seatTemplates);
+            seatTemplateRepository.saveAll(seatTemplates);
+        }
     }
 
     // 기존 buildSeatTemplate 메소드는 그대로 사용하거나, CSV 구조에 맞게 파라미터 조정 가능
@@ -77,7 +79,7 @@ public class SeatTemplateInitializer implements ApplicationRunner {
                         .seatType(seatType)
                         .seatSection(section)
                         .seatBlock(block)
-                        .seatRow(row != null ? String.valueOf(row) : null)
+                        .seatRow(row!=null ? String.valueOf(row):null)
                         .seatNum(num)
                         .build())
                 .build();

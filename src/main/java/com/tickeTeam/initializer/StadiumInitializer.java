@@ -10,15 +10,13 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-@Order(1)
-@Component
 @RequiredArgsConstructor
-public class StadiumInitializer implements ApplicationRunner {
+public class StadiumInitializer implements DataInitializer {
 
     private final StadiumRepository stadiumRepository;
 
     @Override
-    public void run(ApplicationArguments args) {
+    public void run() {
         if (stadiumRepository.count() == 0) {
             List<Stadium> stadiums = List.of(
                     Stadium.of("잠실 야구장"),

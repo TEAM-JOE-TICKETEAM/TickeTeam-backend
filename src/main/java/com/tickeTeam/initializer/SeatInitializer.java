@@ -27,11 +27,8 @@ import org.springframework.stereotype.Component;
  * 총 5556개의 좌석 정보 생성
  */
 
-@Order(3)
-@Component
 @RequiredArgsConstructor
-@Profile("!test")
-public class SeatInitializer implements ApplicationRunner {
+public class SeatInitializer implements DataInitializer {
 
     public static final int DAYS_TO_END = 7;
 
@@ -40,16 +37,17 @@ public class SeatInitializer implements ApplicationRunner {
     private final SeatTemplateRepository seatTemplateRepository;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run() {
+        if (seatRepository.count() == 0) {
+            LocalDate today = LocalDate.now();
+            LocalDate end = today.plusDays(DAYS_TO_END);   // 7일 뒤
 
-        LocalDate today = LocalDate.now();
-        LocalDate end = today.plusDays(DAYS_TO_END);   // 7일 뒤
+            List<Game> games = gameRepository.findByMatchDayBetween(today, end);
+            List<SeatTemplate> seatTemplates = seatTemplateRepository.findAll();
 
-        List<Game> games = gameRepository.findByMatchDayBetween(today, end);
-        List<SeatTemplate> seatTemplates = seatTemplateRepository.findAll();
-
-        List<Seat> seats = generateSeatsForGames(games, seatTemplates);
-        seatRepository.saveAll(seats);
+            List<Seat> seats = generateSeatsForGames(games, seatTemplates);
+            seatRepository.saveAll(seats);
+        }
     }
 
     private List<Seat> generateSeatsForGames(List<Game> games, List<SeatTemplate> templates) {

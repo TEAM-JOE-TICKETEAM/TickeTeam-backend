@@ -11,7 +11,8 @@ import com.tickeTeam.common.exception.ErrorCode;
 import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -21,33 +22,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
+import org.springframework.core.io.ClassPathResource;
 
-@Order(2)
-@Slf4j
-@Component
 @RequiredArgsConstructor
-@Profile("!test")
-public class GameInitializer implements ApplicationRunner {
+public class GameInitializer implements DataInitializer {
 
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
     private final StadiumRepository stadiumRepository;
 
     @Override
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(){
 
         // CSV 파일 경로
-        Path filePath = Paths.get("src/main/resources/data/matches.csv");
+        ClassPathResource resource = new ClassPathResource("data/matches.csv");
 
         List<Game> games = new ArrayList<>();
 
-        try(CSVReader csvReader = new CSVReader(new FileReader(filePath.toFile()))){
+        try(InputStream in = resource.getInputStream();
+            CSVReader csvReader = new CSVReader(new InputStreamReader(in))){
 
             List<String[]> rows = csvReader.readAll();
 
@@ -85,7 +78,7 @@ public class GameInitializer implements ApplicationRunner {
                     games.add(game);
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new BusinessException(ErrorCode.GAME_DATA_INSERT_ERROR);
         }
 
