@@ -1,6 +1,8 @@
 package com.tickeTeam.domain.seat.repository;
 
+import com.tickeTeam.common.annotation.Trace;
 import com.tickeTeam.domain.game.entity.Game;
+import com.tickeTeam.domain.seat.dto.response.SeatInfoResponse;
 import com.tickeTeam.domain.seat.entity.Seat;
 import com.tickeTeam.domain.seat.entity.SeatStatus;
 import jakarta.persistence.LockModeType;
@@ -12,14 +14,40 @@ import org.springframework.data.repository.query.Param;
 
 public interface SeatRepository extends JpaRepository<Seat, Long> {
 
-    public List<Seat> findAllByGameAndSeatStatus(Game game, SeatStatus seatStatus);
+    List<Seat> findAllByGameAndSeatStatus(Game game, SeatStatus seatStatus);
 
-    @Query("SELECT s FROM Seat s JOIN FETCH s.seatTemplate WHERE s.game = :game AND s.seatStatus = :status")
+    @Query("SELECT s FROM Seat s " +
+            "JOIN FETCH s.seatTemplate st " +
+            "JOIN FETCH st.seatInfo " + // seatInfo도 함께 FETCH
+            "WHERE s.game = :game AND s.seatStatus = :status")
     List<Seat> findAllByGameAndSeatStatusWithTemplate(@Param("game") Game game, @Param("status") SeatStatus status);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select s from Seat s where s.id in :seatIds")
+    List<Seat> findAllByIdForUpdate(@Param("seatIds") List<Long> seatIds);
 
-    public List<Seat> findAllByIdIn(List<Long> seatIds);
+    List<Seat> findAllByIdIn(List<Long> seatIds);
 
-    public List<Seat> findByIdIn(List<Long> seatIds);
+    List<Seat> findByIdIn(List<Long> seatIds);
 
+
+    @Query("""
+    SELECT new com.tickeTeam.domain.seat.dto.response.SeatInfoResponse(
+        s.id,
+        st.seatInfo.seatType,
+        st.seatInfo.seatSection,
+        st.seatInfo.seatBlock,
+        st.seatInfo.seatRow,
+        st.seatInfo.seatNum,
+        s.seatStatus
+    )
+    FROM Seat s
+    JOIN s.seatTemplate st
+    WHERE s.game = :game AND s.seatStatus = :status
+""")
+    @Trace
+    List<SeatInfoResponse> findSeatProjectionsByGame(
+            @Param("game") Game game,
+            @Param("status") SeatStatus status
+    );
 }

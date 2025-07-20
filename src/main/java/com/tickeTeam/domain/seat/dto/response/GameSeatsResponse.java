@@ -1,5 +1,6 @@
 package com.tickeTeam.domain.seat.dto.response;
 
+import com.tickeTeam.common.annotation.Trace;
 import com.tickeTeam.domain.seat.entity.Seat;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,14 +18,11 @@ public class GameSeatsResponse implements Serializable {
 
     private String stadium;
 
-    private List<SeatInfoResponse> seats;
+   private List<SeatInfoResponse> seats;
 
-    public static GameSeatsResponse of(List<Seat> seats, Long gameId, String stadium){
+    @Trace
+    public static GameSeatsResponse of(List<SeatInfoResponse> seats, Long gameId, String stadium){
         if (seats.isEmpty()) return new GameSeatsResponse(gameId, stadium, new ArrayList<>());
-
-        List<SeatInfoResponse> seatInfoList = seats.stream()
-                .map(SeatInfoResponse::from)
-                .toList();
-        return new GameSeatsResponse(gameId, stadium, seatInfoList);
+        return new GameSeatsResponse(gameId, stadium, seats);
     }
 }
