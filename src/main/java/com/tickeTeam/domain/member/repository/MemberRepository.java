@@ -13,7 +13,6 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
 
     Optional<Member> findByEmail(String email);
 
-    @Cacheable(value = "members", key = "#email")
     @Query("SELECT m FROM Member m JOIN FETCH m.favoriteTeam WHERE m.email = :email")
     Optional<Member> findByEmailWithTeam(@Param("email") String email);
 }
