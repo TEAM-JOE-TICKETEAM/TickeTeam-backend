@@ -19,3 +19,4 @@ public class SeatSelectRequest implements Serializable {
         return new SeatSelectRequest(gameId, selectedSeatIds);
     }
 }
+

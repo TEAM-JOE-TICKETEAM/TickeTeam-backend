@@ -90,8 +90,7 @@ public class JwtUtil {
     // 토큰 생성
     public String createJwt(String type, String email, MemberRole role, Long memberIdentity) {
 
-        log.info("createJwt - type: {}, email: {}, role: {}, memberIdentity: {}", type, email, role,
-                memberIdentity);
+        //log.info("createJwt - type: {}, email: {}, role: {}, memberIdentity: {}", type, email, role, memberIdentity);
 
         long expirationTime = "access".equals(type)
                 ? accessTokenExpirationPeriod

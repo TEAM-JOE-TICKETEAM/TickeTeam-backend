@@ -122,6 +122,7 @@ public class TicketService {
     }
 
     // 특정 티켓 취소 메서드
+    @Transactional
     public ResultResponse cancelTicket(Long ticketId) {
         Ticket ticket = ticketRepository.findById(ticketId).orElseThrow(
                 () -> new NotFoundException(ErrorCode.TICKET_NOT_FOUND));

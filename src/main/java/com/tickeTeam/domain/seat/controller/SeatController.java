@@ -1,9 +1,9 @@
 package com.tickeTeam.domain.seat.controller;
 
+import com.tickeTeam.common.annotation.Trace;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
-import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.service.SeatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,8 +29,8 @@ public class SeatController {
             description = "특정 경기의 좌석 정보를 조회합니다."
     )
     @GetMapping("/{gameId}")
+    @Trace
     public ResponseEntity<ResultResponse> gameSeats(@PathVariable("gameId") Long gameId){
-
         ResultResponse resultResponse = ResultResponse.of(ResultCode.GET_GAME_SEAT_SUCCESS,
                 seatService.getGameSeats(gameId));
         return ResponseEntity.ok(resultResponse);

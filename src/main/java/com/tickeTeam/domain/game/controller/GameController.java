@@ -1,5 +1,6 @@
 package com.tickeTeam.domain.game.controller;
 
+import com.tickeTeam.common.annotation.Trace;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.game.dto.response.WeeklyGamesResponse;

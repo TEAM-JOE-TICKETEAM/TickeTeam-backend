@@ -1,5 +1,6 @@
 package com.tickeTeam.infrastructure.security.authentication;
 
+import com.tickeTeam.common.annotation.Trace;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.infrastructure.security.authentication.dto.LoginRequest;
 import io.swagger.v3.oas.annotations.Operation;

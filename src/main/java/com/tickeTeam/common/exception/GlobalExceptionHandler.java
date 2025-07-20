@@ -1,12 +1,14 @@
 package com.tickeTeam.common.exception;
 
 import com.tickeTeam.common.exception.customException.BusinessException;
+import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 @Slf4j
 @RestControllerAdvice
@@ -14,12 +16,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e){
-        log.error("여기 에러 발생!!!");
-        e.printStackTrace();
-        log.error("여기까지 printStackTrace");
         log.error(e.getMessage(), e);
         ErrorResponse response = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    protected ResponseEntity<Void> handleAsyncRequestNotUsableException(AsyncRequestNotUsableException e) {
+        // 클라이언트가 먼저 연결을 끊어서 발생하는 자연스러운 예외이므로,
+        // 별도의 에러 로그를 남기지 않고 null 응답을 보내 조용히 처리합니다.
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @ExceptionHandler

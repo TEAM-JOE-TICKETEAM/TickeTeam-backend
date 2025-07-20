@@ -14,21 +14,26 @@ import com.tickeTeam.infrastructure.security.jwt.JwtUtil;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final MemberRepository memberRepository;
 
     // 7일 이내 경기 조회(조회 당일 기준)
     @Cacheable(value = "weeklyGames", key = "#member.favoriteTeam.id")
+    @Transactional(readOnly = true)
     public WeeklyGamesResponse getGamesInNextSevenDays(Member member) {
+        log.info("===== Cache Miss! Querying DB for weeklyGames. Team ID: {} =====", member.getFavoriteTeam().getId());
+
         Team findTeam = member.getFavoriteTeam();
 
         LocalDate today = LocalDate.now();
