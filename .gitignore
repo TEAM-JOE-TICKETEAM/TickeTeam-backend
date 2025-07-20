@@ -208,3 +208,4 @@ src/test/resources/application.properties
 
 /mysql
 .env
+.my.cnf

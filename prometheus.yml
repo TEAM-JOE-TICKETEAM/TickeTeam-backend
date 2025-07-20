@@ -17,3 +17,11 @@ scrape_configs:
       # 'host.docker.internal:8080' (Docker Desktop) 또는 호스트 머신 IP 사용
       - targets: ["app:8080"]
       # - targets: ["172.30.1.11:8080"] # 예시: 특정 호스트 IP (이전 대화에서 찾은 IP)
+
+  - job_name: "mysql-primary"
+    static_configs:
+      - targets: [ "mysql-exporter-primary:9104" ]
+
+  - job_name: "mysql-replica"
+    static_configs:
+      - targets: [ "mysql-exporter-replica:9104" ]

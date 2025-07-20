@@ -2,20 +2,21 @@ services:
   app:
     build: .
     depends_on:
-      db:
+      db-primary:
         condition: service_healthy
       redis:
         condition: service_started
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/ticketeam?useSSL=false&allowPublicKeyRetrieval=true
-      - SPRING_PROFILES_ACTIVE=prod
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - TZ=Asia/Seoul
       # Actuator의 Prometheus 엔드포인트를 활성화하는 설정
       - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=prometheus
     networks:
-        - ticketeam-net
+      - ticketeam-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   # Nginx 로드 밸런서
   nginx:
@@ -25,8 +26,11 @@ services:
       - "80:80" # 외부 애플리케이션 접근 포트
       - "9090:9090" # Prometheus UI 접근 포트
       - "3000:3000" # Grafana UI 접근 포트
+    environment:
+      - TZ=Asia/Seoul
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - app
       - prometheus
@@ -35,20 +39,50 @@ services:
       - ticketeam-net
 
   # 데이터베이스 (성능 향상을 위해 리소스 할당)
-  db:
+  db-primary:
     image: mysql:8.0
-    container_name: ticketeam-db
+    container_name: ticketeam-db-primary
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_DATABASE: ticketeam
       MYSQL_ROOT_PASSWORD: hajimin0
-    ports:
-      - "3307:3307"
-    volumes:
-      - ./mysql:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
       timeout: 20s
       retries: 10
+    command:
+      - --enforce-gtid-consistency=ON
+      - --server-id=1
+      - --log-bin=mysql-bin
+      - --binlog-do-db=ticketeam
+      - --gtid-mode=ON
+    volumes:
+      - mysql_primary_data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - ticketeam-net
+
+  db-replica:
+    image: mysql:8.0
+    container_name: ticketeam-db-replica
+    ports:
+      - "3307:3306"
+    depends_on:
+      db-primary:
+        condition: service_healthy
+    environment:
+      MYSQL_DATABASE: ticketeam
+      MYSQL_ROOT_PASSWORD: hajimin0
+    command:
+      - --enforce-gtid-consistency=ON
+      - --server-id=2
+      - --replicate-do-db=ticketeam
+      - --read-only=ON
+      - --gtid-mode=ON
+    volumes:
+      - mysql_replica_data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - ticketeam-net
 
@@ -60,6 +94,8 @@ services:
       - "6379:6379"
     networks:
       - ticketeam-net
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
 
   influxdb:
     image: influxdb:1.8 # k6와 호환성이 좋은 1.8 버전 사용
@@ -68,6 +104,7 @@ services:
       - "8086:8086" # 로컬에서 InfluxDB 접근 포트
     volumes:
       - influxdb_data:/var/lib/influxdb # 데이터 영속성을 위한 볼륨
+      - /etc/localtime:/etc/localtime:ro
     #environment:
     # k6 데이터베이스 자동 생성을 위한 환경 변수 (선택 사항, 수동 생성 권장)
     # - INFLUXDB_DB=k6
@@ -111,8 +148,35 @@ services:
     networks:
       - ticketeam-net
 
+  mysql-exporter-primary:
+    container_name: mysql-exporter-primary
+    image: prom/mysqld-exporter
+    command:
+      - "--mysqld.username=root:hajimin0"
+      - "--mysqld.address=db-primary:3306"
+    ports:
+      - "9104:9104"
+    depends_on:
+      - db-primary
+    networks:
+      - ticketeam-net
+
+  mysql-exporter-replica:
+    container_name: mysql-exporter-replica
+    image: prom/mysqld-exporter
+    command:
+      - "--mysqld.username=root:hajimin0"
+      - "--mysqld.address=db-replica:3306"
+    ports:
+      - "9106:9104"
+    depends_on:
+      - db-replica
+    networks:
+      - ticketeam-net
+
 volumes: # 데이터 영속성을 위한 명명된 볼륨 정의
-  mysql_data:
+  mysql_primary_data:
+  mysql_replica_data:
   influxdb_data:
   prometheus_data:
   grafana_data:
