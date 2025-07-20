@@ -1,5 +1,6 @@
 package com.tickeTeam.domain.member.service;
 
+import com.tickeTeam.common.annotation.Trace;
 import com.tickeTeam.common.exception.ErrorCode;
 import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.common.exception.customException.NotFoundException;
@@ -13,15 +14,20 @@ import com.tickeTeam.domain.member.repository.TeamRepository;
 import com.tickeTeam.domain.member.dto.request.MemberSignUpRequest;
 import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
+import com.tickeTeam.domain.member.dto.MemberDto;
 import com.tickeTeam.domain.ticket.dto.response.ReservationListResponse;
 import com.tickeTeam.domain.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MemberService{
@@ -85,6 +91,23 @@ public class MemberService{
         }
 
         return ResultResponse.of(ResultCode.MEMBER_VERIFICATION_SUCCESS);
+    }
+
+    //@Cacheable(value = "memberByEmail", key = "#email", cacheResolver = "cacheResolver")
+    @Cacheable(value = "memberByEmail", key = "#email")
+    @Transactional(readOnly = true)
+    public MemberDto getMemberByEmail(String email){
+        log.info(">>> getMemberByEmail() readOnly = {}", TransactionSynchronizationManager.isCurrentTransactionReadOnly());
+        Member member = memberRepository.findByEmailWithTeam(email).orElseThrow(
+                () -> new NotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+        return new MemberDto(
+                member.getId(),
+                member.getName(),
+                member.getEmail(),
+                member.getPassword(),
+                member.getFavoriteTeam().getTeamName(),
+                member.getRole()
+        );
     }
 
     public Member getMemberByAuthentication() {

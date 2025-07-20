@@ -1,6 +1,7 @@
 package com.tickeTeam.infrastructure.security.userdetails;
 
 import com.tickeTeam.domain.member.entity.Member;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @AllArgsConstructor
-public class UserDetailsDto implements UserDetails {
+public class UserDetailsDto implements UserDetails, Serializable {
 
     private final Member member;
 
