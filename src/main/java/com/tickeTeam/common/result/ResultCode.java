@@ -22,7 +22,8 @@ public enum ResultCode {
     GET_WEEKLY_GAME_SUCCESS("G001", "일주일 이내 경기 목록 조회에 성공했습니다."),
 
     // Seat
-    GET_GAME_SEAT_SUCCESS("S001", "경기 좌석 조회에 성공했습니다."),
+    GET_GAME_SEAT_SUCCESS("S001", "경기 좌석 현황 조회에 성공했습니다."),
+    GET_BLOCK_SEAT_SUCCESS("S002", "해당 블록 좌석 상세 조회에 성공했습니다."),
     SEATS_SELECT_SUCCESS("S002", "좌석 선점에 성공했습니다."),
 
     // SectionPrice

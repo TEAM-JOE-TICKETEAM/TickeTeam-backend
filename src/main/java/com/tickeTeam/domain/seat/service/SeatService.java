@@ -8,12 +8,12 @@ import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.game.entity.Game;
 import com.tickeTeam.domain.game.repository.GameRepository;
-import com.tickeTeam.domain.member.entity.Member;
-import com.tickeTeam.domain.member.repository.MemberRepository;
+import com.tickeTeam.domain.seat.dto.request.BlockSeatsRequest;
 import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
+import com.tickeTeam.domain.seat.dto.response.BlockSeatsResponse;
 import com.tickeTeam.domain.seat.dto.response.GameSeatsResponse;
 import com.tickeTeam.domain.seat.dto.response.SeatInfoResponse;
-import com.tickeTeam.domain.seat.entity.Seat;
+import com.tickeTeam.domain.seat.dto.response.SeatSummaryResponse;
 import com.tickeTeam.domain.seat.entity.SeatStatus;
 import com.tickeTeam.domain.seat.repository.SeatRepository;
 import java.util.ArrayList;
@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -45,17 +44,26 @@ public class SeatService {
     private final GameRepository gameRepository;
     private final SeatTransactionService seatTransactionService;
 
-    // 좌석 정보 조회
-    //@Cacheable(value = "gameSeats", key = "#gameId", cacheResolver = "cacheResolver")
-    @Cacheable(value = "gameSeats", key = "#gameId")
+    // 특정 블록 좌석 정보 상세 조회
+    //@Cacheable(value = "gameSeats", key = "#gameId")
     @Transactional(readOnly = true)
     @Trace
-    public GameSeatsResponse getGameSeats(Long gameId) {
+    public BlockSeatsResponse getBlockSeats(Long gameId, String seatSection, String seatBlock) {
         Game findGame = gameRepository.findByIdWithStadium(gameId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
-        //List<SeatInfoResponse> seatDtos = seatRepository.findSeatProjectionsByGame(findGame, SeatStatus.AVAILABLE);
-        GameSeatsResponse gameSeatsResponse = GameSeatsResponse.of( gameId, findGame.getStadium().getStadiumName());
-        return gameSeatsResponse;
+        List<SeatInfoResponse> seats = seatRepository.
+                findSeatProjectionsByGameAndSectionAndBlock(findGame, SeatStatus.AVAILABLE, seatSection, seatBlock);
+        return BlockSeatsResponse.of(seats, gameId, findGame.getStadium().getStadiumName());
+    }
+
+    // 특정 경기 블록별 좌석 현황 조회
+    @Transactional(readOnly = true)
+    @Trace
+    public GameSeatsResponse getGameSeats(Long gameId){
+        Game findGame = gameRepository.findByIdWithStadium(gameId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
+        List<SeatSummaryResponse> seatSummary = seatRepository.findSeatSummaryByGameId(gameId);
+        return GameSeatsResponse.of(seatSummary, gameId, findGame.getStadium().getStadiumName());
     }
 
     // 좌석 선택(다중 선택 가능, 선택 시 해당 좌석에 선점 적용(7분))
