@@ -33,8 +33,10 @@ public enum ResultCode {
     TICKET_ISSUE_SUCCESS("T001", "티켓 발행에 성공했습니다."),
     TICKETING_CANCEL_SUCCESS("T002", "티켓팅 과정 취소에 성공했습니다."),
     RESERVATION_CANCEL_SUCCESS("T003", "예매 취소에 성공했습니다."),
-    TICKET_CANCEL_SUCCESS("T004", "티켓 취소에 성공했습니다.")
-    ;
+    TICKET_CANCEL_SUCCESS("T004", "티켓 취소에 성공했습니다."),
+
+    // Payment
+    PAYMENT_SUCCESS("P001","결제에 성공했습니다." );
 
     private final String code;
     private final String message;

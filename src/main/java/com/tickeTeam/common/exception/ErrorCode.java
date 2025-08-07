@@ -28,8 +28,8 @@ public enum ErrorCode {
 
     // Seat
     SEAT_TEMPLATE_INSERT_ERROR(500, "ST001", "SeatTemplate 데이터 삽입 중 오류 발생"),
-    SEAT_ALREADY_HELD(400, "S001", "이미 예약되어있는 좌석입니다."),
-    SEAT_CANNOT_BE_HELD(400, "S002","해당 좌석을 선점할 수 없습니다."),
+    SEAT_ALREADY_HELD(400, "S001", "이미 선점 되어있는 좌석입니다."),
+    SEAT_ALREADY_RESERVED(400, "S002","이미 예약 되어있는 좌석입니다."),
     SEAT_LIMIT_OVER(400, "S002","인당 좌석은 최대 4석까지만 선택 가능합니다."),
 
     // Lock
@@ -49,7 +49,9 @@ public enum ErrorCode {
     SEAT_NOT_HELD(400, "T002", "해당 좌석은 선점되어있지 않습니다."),
     RESERVATION_NOT_FOUND(404, "T003", "해당 예매 기록을 찾을 수 없습니다."),
     TICKET_NOT_FOUND(404, "T004", "해당 티켓을 찾을 수 없습니다."),
-    ;
+
+    // Payment
+    PAYMENT_NOT_FOUND(404, "P001", "해당 결제 정보를 찾을 수 없습니다.");
 
     private final int status;
     private final String code;

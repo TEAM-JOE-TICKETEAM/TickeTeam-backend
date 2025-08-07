@@ -166,7 +166,7 @@ public class SeatSelectTest {
         setupMockAuthentication("test@example.com", "USER");
         Long seatAId = seatA.getId(); // 서비스 호출 전 ID 저장
 
-        seatService.selectSeats(SeatSelectRequest.of(new ArrayList<>(List.of(seatAId))));
+        seatService.selectSeats(SeatSelectRequest.of(1L, new ArrayList<>(List.of(seatAId))));
 
         // 서비스 호출 후 DB에서 최신 상태의 Seat 객체를 다시 가져와서 검증
         Seat updatedSeatA = seatRepository.findById(seatAId)
@@ -181,7 +181,7 @@ public class SeatSelectTest {
         Long seatAId = seatA.getId(); // 서비스 호출 전 ID 저장
         Long seatBId = seatB.getId();
 
-        seatService.selectSeats(SeatSelectRequest.of(new ArrayList<>(List.of(seatAId, seatBId))));
+        seatService.selectSeats(SeatSelectRequest.of(1L, new ArrayList<>(List.of(seatAId, seatBId))));
 
         // 서비스 호출 후 DB에서 최신 상태의 Seat 객체를 다시 가져와서 검증
         Seat updatedSeatA = seatRepository.findById(seatAId)
@@ -204,7 +204,7 @@ public class SeatSelectTest {
             new Thread(() -> {
                 setupMockAuthentication("test@example.com", "USER");
                 try{
-                    seatService.selectSeats(SeatSelectRequest.of(new ArrayList<>(List.of(seatAId))));
+                    seatService.selectSeats(SeatSelectRequest.of(1L, new ArrayList<>(List.of(seatAId))));
                 } catch (BusinessException e){
                     assertEquals(ErrorCode.SEAT_ALREADY_HELD, e.getErrorCode());
                     exceptionCount.incrementAndGet();
@@ -239,7 +239,7 @@ public class SeatSelectTest {
             new Thread(() -> {
                 setupMockAuthentication("test@example.com", "USER");
                 try{
-                    seatService.selectSeats(SeatSelectRequest.of(new ArrayList<>(List.of(seatId))));
+                    seatService.selectSeats(SeatSelectRequest.of(1L, new ArrayList<>(List.of(seatId))));
                 } catch (BusinessException e){
                     assertEquals(ErrorCode.SEAT_ALREADY_HELD, e.getErrorCode());
                     if (seatId == seatAId) exceptionCountA.incrementAndGet();
@@ -275,7 +275,7 @@ public class SeatSelectTest {
             new Thread(() -> {
                 setupMockAuthentication("test@example.com", "USER");
                 try{
-                    seatService.selectSeats(SeatSelectRequest.of(new ArrayList<>(List.of(seatAId, seatBId))));
+                    seatService.selectSeats(SeatSelectRequest.of(1L, new ArrayList<>(List.of(seatAId, seatBId))));
                 } catch (BusinessException e){
                     assertEquals(ErrorCode.SEAT_ALREADY_HELD, e.getErrorCode());
                     exceptionCount.incrementAndGet();

@@ -12,4 +12,5 @@ public class TicketIssueRequest {
 
     private List<Long> seatIds;
     private Long gameId;
+    private Long paymentId;
 }

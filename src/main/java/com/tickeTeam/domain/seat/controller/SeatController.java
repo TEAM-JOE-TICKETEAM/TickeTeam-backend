@@ -5,6 +5,7 @@ import com.tickeTeam.common.result.ResultCode;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.seat.dto.request.BlockSeatsRequest;
 import com.tickeTeam.domain.seat.dto.request.SeatSelectRequest;
+import com.tickeTeam.domain.seat.service.SeatLettuceService;
 import com.tickeTeam.domain.seat.service.SeatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SeatController {
 
     private final SeatService seatService;
+    private final SeatLettuceService lettuceService;
 
     @Operation(
             summary = "블록 좌석 조회",
@@ -58,6 +60,7 @@ public class SeatController {
     )
     @PostMapping("/selection")
     public ResponseEntity<ResultResponse> selectSeats(@RequestBody SeatSelectRequest request){
-        return ResponseEntity.ok(seatService.selectSeats(request));
+        //return ResponseEntity.ok(seatService.selectSeats(request));
+        return ResponseEntity.ok(lettuceService.selectSeats(request));
     }
 }

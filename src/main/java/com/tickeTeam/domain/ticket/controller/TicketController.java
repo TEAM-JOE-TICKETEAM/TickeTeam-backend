@@ -3,6 +3,7 @@ package com.tickeTeam.domain.ticket.controller;
 import com.tickeTeam.common.result.ResultResponse;
 import com.tickeTeam.domain.ticket.dto.request.TicketIssueRequest;
 import com.tickeTeam.domain.ticket.dto.request.TicketingCancelRequest;
+import com.tickeTeam.domain.ticket.service.TicketLettuceService;
 import com.tickeTeam.domain.ticket.service.TicketService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TicketController {
 
     private final TicketService ticketService;
+    private final TicketLettuceService lettuceService;
 
     @Operation(
             summary = "선택한 좌석(들)의 티켓을 발급받습니다.",
@@ -29,7 +31,8 @@ public class TicketController {
     )
     @PostMapping("/issue")
     public ResponseEntity<ResultResponse> issueTickets(@RequestBody TicketIssueRequest ticketIssueRequest){
-        return ResponseEntity.ok(ticketService.issueTickets(ticketIssueRequest));
+        //return ResponseEntity.ok(ticketService.issueTickets(ticketIssueRequest));
+        return ResponseEntity.ok(lettuceService.issueTickets(ticketIssueRequest));
     }
 
     @Operation(

@@ -19,12 +19,15 @@ import com.tickeTeam.domain.seat.repository.SeatRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -33,38 +36,27 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SeatService {
+public class SeatLettuceService {
+
+    private final StringRedisTemplate redisTemplate;
 
     private static final String SEAT_PREFIX = "seat";
+    private static final String LOCK_SUFFIX = ":lock";
+    private static final String HELD_BY_SUFFIX = ":heldBy";
     public static final int LOCK_TIME_OUT = 5;
     public static final int LOCK_WAIT_TIME = 0;
+    private static final long LOCK_EXPIRE = 60;  // 1분
+    private static final long HELD_TTL = 7 * 60; // 7분
+
+    private static final RedisScript<Long> UNLOCK_SCRIPT = RedisScript.of(
+            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
+            Long.class
+    );
 
     private final SeatRepository seatRepository;
-    private final RedissonClient redissonClient;
     private final GameRepository gameRepository;
     private final SeatTransactionService seatTransactionService;
 
-    // 특정 블록 좌석 정보 상세 조회
-    //@Cacheable(value = "gameSeats", key = "#gameId")
-    @Transactional(readOnly = true)
-    @Trace
-    public BlockSeatsResponse getBlockSeats(Long gameId, String seatSection, String seatBlock) {
-        Game findGame = gameRepository.findByIdWithStadium(gameId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
-        List<SeatInfoResponse> seats = seatRepository.
-                findSeatProjectionsByGameAndSectionAndBlock(findGame, SeatStatus.AVAILABLE, seatSection, seatBlock);
-        return BlockSeatsResponse.of(seats, gameId, findGame.getStadium().getStadiumName());
-    }
-
-    // 특정 경기 블록별 좌석 현황 조회
-    @Transactional(readOnly = true)
-    @Trace
-    public GameSeatsResponse getGameSeats(Long gameId){
-        Game findGame = gameRepository.findByIdWithStadium(gameId)
-                .orElseThrow(() -> new NotFoundException(ErrorCode.MATCH_NOT_FOUND));
-        List<SeatSummaryResponse> seatSummary = seatRepository.findSeatSummaryByGameId(gameId);
-        return GameSeatsResponse.of(seatSummary, gameId, findGame.getStadium().getStadiumName());
-    }
 
     // 좌석 선택(다중 선택 가능, 선택 시 해당 좌석에 선점 적용(7분))
     // 한 번에 인당 최대 4석, 같은 구역 내에서만 다중 선택 가능
@@ -78,42 +70,41 @@ public class SeatService {
         Collections.sort(selectedSeatIds);  // 교착상태 방지를 위해 오름차순 정렬 적용
 
         // 가져온 좌석들의 상태(SeatStatus) 선점 상태로 변경하며 분산락 획득
-        List<RLock> acquiredLocks = new ArrayList<>();
+        List<String> acquiredKeys = new ArrayList<>();
         String memberEmail = getEmailByAuthentication();
         try {
             for (Long seatId : selectedSeatIds) {
-                String key = keyResolver(seatId);
-                RLock lock = redissonClient.getLock(key + ":lock");
+                String key = keyResolver(seatId) + LOCK_SUFFIX;
+                String lockValue = UUID.randomUUID().toString();
 
-                // 락 획득 시도 (5초 대기, 1분 후 자동 해제)
-                if (!lock.tryLock(LOCK_WAIT_TIME, LOCK_TIME_OUT, TimeUnit.MINUTES)) {
+                // 락 획득 시도 (대기 X, 1분 후 자동 해제)
+                Boolean locked = redisTemplate.opsForValue().setIfAbsent(key, lockValue, LOCK_EXPIRE, TimeUnit.SECONDS);
+                if (!Boolean.TRUE.equals(locked)) {
                     throw new BusinessException(ErrorCode.CANNOT_GET_LOCK);
                 }
 
-                acquiredLocks.add(lock); // 획득한 락 저장
+                acquiredKeys.add(key + "::" + lockValue); // 획득한 락 저장
 
                 // 이미 선점된 좌석인지 확인
-                String redisKey = key + ":heldBy";
-                String existingUserId = (String) redissonClient.getBucket(redisKey).get();
-                if (existingUserId!=null) {
+                String heldKey = keyResolver(seatId) + HELD_BY_SUFFIX;
+                if (Boolean.TRUE.equals(redisTemplate.hasKey(heldKey))) {
                     throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
                 }
 
                 // 선점 정보 Redis에 저장 (7분 TTL)
-                redissonClient.getBucket(redisKey).set(memberEmail, 7, TimeUnit.MINUTES);
+                redisTemplate.opsForValue().set(heldKey, memberEmail, HELD_TTL, TimeUnit.SECONDS);
             }
 
-
-        } catch (InterruptedException e) {
-            // InterruptedException 발생 시 스레드의 인터럽트 상태 -> false
-            Thread.currentThread().interrupt();  // 다시 interrupt 상태 확인 가능하도록 다시 true 로 돌려놓기
-            throw new BusinessException(ErrorCode.INTERRUPTED_WHILE_LOCKING);
         } finally {
-            releaseLocks(acquiredLocks);
+            for (String fullKey : acquiredKeys) {
+                String[] parts = fullKey.split("::");
+                String key = parts[0];
+                String value = parts[1];
+                redisTemplate.execute(UNLOCK_SCRIPT, Collections.singletonList(key), value);
+            }
         }
 
         seatTransactionService.holdSeatsInNewTransaction(selectedSeatIds);
-
         return ResultResponse.of(ResultCode.SEATS_SELECT_SUCCESS);
     }
 

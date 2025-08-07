@@ -28,7 +28,7 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     @Query("select s from Seat s where s.id in :seatIds")
     List<Seat> findAllByIdForUpdate(@Param("seatIds") List<Long> seatIds);
 
-    List<Seat> findAllByIdIn(List<Long> seatIds);
+    List<Seat> findBySeatStatus(SeatStatus status);
 
     List<Seat> findByIdIn(List<Long> seatIds);
 

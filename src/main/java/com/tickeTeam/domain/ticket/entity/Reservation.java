@@ -3,6 +3,7 @@ package com.tickeTeam.domain.ticket.entity;
 import com.tickeTeam.common.entity.BaseEntity;
 import com.tickeTeam.domain.game.entity.Game;
 import com.tickeTeam.domain.member.entity.Member;
+import com.tickeTeam.domain.payment.entity.Payment;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +47,10 @@ public class Reservation extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reserved_game")
     private Game reservedGame;
+
+    @OneToOne
+    @JoinColumn(name = "payment")
+    private Payment payment;
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

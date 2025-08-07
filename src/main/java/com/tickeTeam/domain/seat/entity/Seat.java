@@ -3,7 +3,6 @@ package com.tickeTeam.domain.seat.entity;
 import com.tickeTeam.common.exception.ErrorCode;
 import com.tickeTeam.common.exception.customException.BusinessException;
 import com.tickeTeam.domain.game.entity.Game;
-import com.tickeTeam.domain.member.entity.Member;
 import com.tickeTeam.domain.stadium.entity.Stadium;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -53,8 +52,8 @@ public class Seat implements Serializable {
         if (this.seatStatus == SeatStatus.HELD) {
             throw new BusinessException(ErrorCode.SEAT_ALREADY_HELD);
         }
-        if (this.seatStatus != SeatStatus.AVAILABLE){
-            throw new BusinessException(ErrorCode.SEAT_CANNOT_BE_HELD);
+        if (this.seatStatus != SeatStatus.AVAILABLE && this.seatStatus == SeatStatus.RESERVED){
+            throw new BusinessException(ErrorCode.SEAT_ALREADY_RESERVED);
         }
 
         this.seatStatus = SeatStatus.HELD;
